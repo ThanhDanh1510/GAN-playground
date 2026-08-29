@@ -2,7 +2,7 @@
  * GAN Playground 3.0 - High-Fidelity Neural Engine
  * 1. CycleGAN: Gán sọc vằn Zebra TRỰC TIẾP LÊN ĐÚNG THÂN CHÚ NGỰA GỐC (Bảo toàn 100% góc chạy và hậu cảnh rừng)
  * 2. StyleGAN: Sử dụng chuỗi khung hình Latent Walk đơn khối sắc nét (Loại bỏ 100% bóng ma ghosting)
- * 3. Thám Tử AI: Cặp ảnh tuyển chọn 1 Ảnh chụp thật 100% vs 1 Ảnh AI StyleGAN có lỗi chi tiết
+ * 3. Pix2Pix: U-Net Sketch-to-3D Concept Art
  */
 
 // =============================================================================
@@ -137,37 +137,31 @@ function renderCycleFrame() {
       let isHorseBody = false;
 
       if (currentCycleMode === 'horse_zebra') {
-        // NHẬN DIỆN THÂN CHÚ NGỰA TRẮNG (Độ sáng cao, độ bão hòa thấp, ở giữa bức ảnh)
+        // NHẬN DIỆN THÂN CHÚ NGỰA TRẮNG
         const lum = (r * 0.299 + g * 0.587 + b * 0.114);
         const maxC = Math.max(r, g, b);
         const minC = Math.min(r, g, b);
         const sat = maxC - minC;
 
-        // Thân ngựa trắng: lum > 115, ít bão hòa màu, nằm ở vùng giữa Y > 0.2 và Y < 0.88
         if (lum > 110 && sat < 65 && y > h * 0.22 && y < h * 0.88 && x > w * 0.12 && x < w * 0.88) {
           isHorseBody = true;
 
-          // Tính hướng sọc vằn theo góc uốn lượn cơ thể ngựa
-          const angle = 0.72; // Góc nghiêng ~41 độ
+          const angle = 0.72;
           const u = x * Math.cos(angle) + y * Math.sin(angle) + 12 * Math.sin(y * 0.04);
           const stripeWave = Math.sin(u * 0.24);
 
-          // Càng vào sâu trong thân ngựa, sọc càng rõ
           if (stripeWave > -0.05) {
-            // Sọc đen nhung zebra
             const darkFactor = Math.max(0.12, (lum / 255.0) * 0.25);
             targetR = Math.floor(r * darkFactor);
             targetG = Math.floor(g * darkFactor);
             targetB = Math.floor(b * darkFactor + 6);
           } else {
-            // Vùng trắng ngà của zebra (giữ nguyên hoặc tăng độ tương phản)
             targetR = Math.min(255, Math.floor(r * 1.05));
             targetG = Math.min(255, Math.floor(g * 1.05));
             targetB = Math.min(255, Math.floor(b * 1.05));
           }
         }
       } else if (currentCycleMode === 'summer_winter') {
-        // MÙA HÈ -> MÙA ĐÔNG: PHỦ TUYẾT TRÊN NÚI VÀ CÂY
         const isFoliage = (g > r && g > b && g > 60);
         const isMountain = (r > 55 && r < 150 && g > 55 && g < 150 && b > 70 && y < h * 0.8);
 
@@ -183,7 +177,6 @@ function renderCycleFrame() {
           targetB = Math.min(255, Math.floor(b * 1.1 + 45));
         }
       } else {
-        // VAN GOGH STARRY NIGHT
         isHorseBody = true;
         const rad = Math.sqrt((x - w*0.75)**2 + (y - h*0.25)**2);
         const swirl = Math.atan2(y - h*0.25, x - w*0.75) + 0.6 * Math.sin(rad * 0.05);
@@ -196,7 +189,6 @@ function renderCycleFrame() {
         targetB = Math.min(255, Math.floor(src[sIdx+2] * 1.35 + 50));
       }
 
-      // Hòa trộn mượt mà theo tiến trình t
       const curR = Math.round(r * (1 - t) + targetR * t);
       const curG = Math.round(g * (1 - t) + targetG * t);
       const curB = Math.round(b * (1 - t) + targetB * t);
@@ -206,7 +198,6 @@ function renderCycleFrame() {
       out[i+2] = curB;
       out[i+3] = 255;
 
-      // Bản đồ nhiệt
       if (heat) {
         if (isHorseBody && t > 0.05) {
           heat[i] = Math.min(255, Math.abs(curR - r) * 3 + 60);
@@ -400,7 +391,6 @@ function renderSolidFaceCanvas(smile, age, gender, glasses, morph) {
   const h = canvas.height;
   ctx.clearRect(0, 0, w, h);
 
-  // Chọn khung hình sắc nét duy nhất tương ứng với vector điều khiển
   let targetImg = null;
 
   if (age > 50 && StyleAttributes.elder.img.complete) {
@@ -412,18 +402,15 @@ function renderSolidFaceCanvas(smile, age, gender, glasses, morph) {
   } else if (smile < -0.3 && StyleAttributes.neutral.img.complete) {
     targetImg = StyleAttributes.neutral.img;
   } else {
-    // Duyệt chuỗi Latent Walk theo Morphing / Gender
     const frameIndex = Math.min(LatentWalkFrames.length - 1, Math.floor((morph / 100.0) * LatentWalkFrames.length));
     targetImg = LatentWalkFrames[frameIndex];
   }
 
-  // Vẽ 100% ĐƠN KHỐI (Không chồng mờ làm bóng ma)
   if (targetImg && targetImg.complete) {
     ctx.globalAlpha = 1.0;
     ctx.drawImage(targetImg, 0, 0, w, h);
   }
 
-  // Cập nhật công thức toán học StyleGAN chuẩn FFHQ
   const formulaEl = document.getElementById('latent-vector-formula');
   if (formulaEl) {
     const smileSign = smile >= 0 ? `+ ${(smile).toFixed(1)}` : `- ${Math.abs(smile).toFixed(1)}`;
@@ -431,7 +418,6 @@ function renderSolidFaceCanvas(smile, age, gender, glasses, morph) {
     if (window.renderMathInElement) window.renderMathInElement(formulaEl);
   }
 
-  // Kính hiển vi 3 Tầng Deconv
   const fmap1 = document.getElementById('fmap-dcgan-l1');
   const fmap2 = document.getElementById('fmap-dcgan-l2');
   const fmap3 = document.getElementById('fmap-dcgan-l3');
@@ -458,107 +444,7 @@ function randomizeFaceSeed() {
 }
 
 // =============================================================================
-// 3. THÁM TỬ AI: 1 ẢNH CHỤP THẬT 100% VS 1 ẢNH AI STYLEGAN CÓ LỖI RÕ RÀNG
-// =============================================================================
-const TuringQuestions = [
-  {
-    title: "Vòng 1: Đôi Mắt & Bông Tai Đối Xứng",
-    desc: "Hãy quan sát kỹ hai bên bông tai và chi tiết con ngươi để tìm ảnh do AI vẽ!",
-    imgReal: "assets/turing_curated/real_1.jpg",
-    imgFake: "assets/turing_curated/fake_1.jpg",
-    fakeSide: "B",
-    explanation: "Ảnh B là ảnh do AI tạo ra (Fake)! AI thường vẽ hai bên bông tai không đối xứng và con ngươi bị nhòe nhẹ ở viền."
-  },
-  {
-    title: "Vòng 2: Chi Tiết Sợi Tóc & Hậu Cảnh",
-    desc: "Hãy quan sát chân tóc và vùng chuyển tiếp giữa tóc với bức tường phía sau!",
-    imgReal: "assets/turing_curated/real_2.jpg",
-    imgFake: "assets/turing_curated/fake_2.jpg",
-    fakeSide: "B",
-    explanation: "Ảnh B là ảnh do AI tạo ra! Các sợi tóc tơ bị hòa tan bất thường vào họa tiết mờ của phông nền - đây là lỗi texture kinh điển của mạng GAN."
-  },
-  {
-    title: "Vòng 3: Nếp Da & Ánh Sáng Phản Chiếu",
-    desc: "Hãy tìm kiếm sự phản chiếu ánh sáng tự nhiên trên da mặt và đường viền áo!",
-    imgReal: "assets/turing_curated/real_3.jpg",
-    imgFake: "assets/turing_curated/fake_3.jpg",
-    fakeSide: "B",
-    explanation: "Ảnh B là ảnh do AI tạo ra! Vùng chân tóc và viền cổ áo có các vệt mờ artifact đặc trưng của mô hình tạo sinh."
-  }
-];
-
-let currentQuestionIdx = 0;
-let userScore = 0;
-
-function initTuringGame() {
-  loadTuringQuestion(0);
-}
-
-function loadTuringQuestion(idx) {
-  if (idx >= TuringQuestions.length) {
-    showTuringEndScreen();
-    return;
-  }
-  currentQuestionIdx = idx;
-  const q = TuringQuestions[idx];
-
-  const titleEl = document.getElementById('turing-round-title');
-  const descEl = document.getElementById('turing-round-desc');
-  const imgA = document.getElementById('turing-img-a');
-  const imgB = document.getElementById('turing-img-b');
-  const expBox = document.getElementById('turing-explanation-box');
-
-  if (titleEl) titleEl.innerText = `${q.title} (${idx + 1}/${TuringQuestions.length})`;
-  if (descEl) descEl.innerText = q.desc;
-  if (expBox) expBox.classList.add('hidden');
-
-  if (q.fakeSide === 'A') {
-    if (imgA) imgA.src = q.imgFake;
-    if (imgB) imgB.src = q.imgReal;
-  } else {
-    if (imgA) imgA.src = q.imgReal;
-    if (imgB) imgB.src = q.imgFake;
-  }
-}
-
-function submitTuringAnswer(chosenSide) {
-  const q = TuringQuestions[currentQuestionIdx];
-  const isCorrect = chosenSide === q.fakeSide;
-  if (isCorrect) userScore++;
-
-  const expBox = document.getElementById('turing-explanation-box');
-  const expText = document.getElementById('turing-explanation-text');
-  const scoreBadge = document.getElementById('turing-score-badge');
-
-  if (scoreBadge) scoreBadge.innerText = `Điểm thám tử: ${userScore}/${currentQuestionIdx + 1}`;
-  if (expBox && expText) {
-    expBox.classList.remove('hidden');
-    expBox.className = `mt-4 p-4 rounded-xl border ${isCorrect ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-300' : 'bg-rose-950/40 border-rose-500/50 text-rose-300'}`;
-    expText.innerHTML = `<strong>${isCorrect ? '🎉 CHÍNH XÁC!' : '❌ CHƯA ĐÚNG!'}</strong> ${q.explanation}`;
-  }
-}
-
-function nextTuringQuestion() {
-  loadTuringQuestion(currentQuestionIdx + 1);
-}
-
-function showTuringEndScreen() {
-  const container = document.getElementById('turing-game-container');
-  if (container) {
-    container.innerHTML = `
-      <div class="text-center py-10 space-y-4">
-        <div class="text-5xl">🏆</div>
-        <h3 class="text-2xl font-bold text-cyan-400">Hoàn Thành Thử Thách Thám Tử AI!</h3>
-        <p class="text-slate-300 text-lg">Bạn đã đạt điểm số: <strong class="text-amber-400">${userScore}/${TuringQuestions.length}</strong></p>
-        <p class="text-slate-400 max-w-md mx-auto text-sm">Bạn đã hiểu được cách mà mạng Discriminator liên tục soi các chi tiết bất thường (bông tai, nếp tóc, chân tóc) để bắt bài Generator!</p>
-        <button onclick="userScore=0; loadTuringQuestion(0);" class="px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold rounded-xl transition shadow-lg shadow-cyan-500/20">Chơi Lại</button>
-      </div>
-    `;
-  }
-}
-
-// =============================================================================
-// 4. PIX2PIX NEURAL SKETCH-TO-ART (U-NET)
+// 3. PIX2PIX NEURAL SKETCH-TO-ART (U-NET)
 // =============================================================================
 let sketchCanvas, sketchCtx, resultCanvas, resultCtx;
 let isDrawing = false;
