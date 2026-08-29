@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <rect width="200" height="200" fill="#0f172a"/>
+  <!-- Bàn tay lỗi của GAN: 6 ngón tay và các khớp bị dính vào nhau -->
+  <g transform="translate(40, 30)">
+    <path d="M25,60 Q20,110 65,115 Q105,110 95,60 Z" fill="#fed7aa"/>
+    <!-- 6 ngón tay dị thường -->
+    <rect x="8" y="50" width="13" height="35" rx="6.5" transform="rotate(-35 8 50)" fill="#fed7aa"/>
+    <rect x="22" y="20" width="11" height="48" rx="5.5" fill="#fed7aa"/>
+    <rect x="36" y="8" width="11" height="58" rx="5.5" fill="#fed7aa"/>
+    <rect x="50" y="5" width="11" height="60" rx="5.5" fill="#fed7aa"/>
+    <rect x="64" y="12" width="11" height="52" rx="5.5" fill="#fed7aa"/> <!-- Ngón thừa thứ 6 -->
+    <rect x="78" y="25" width="11" height="42" rx="5.5" fill="#fed7aa"/>
+    <rect x="92" y="38" width="10" height="32" rx="5" fill="#fed7aa"/>
+  </g>
+</svg>

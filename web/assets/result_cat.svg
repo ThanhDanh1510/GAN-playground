@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" width="100%" height="100%">
+  <defs>
+    <radialGradient id="catFur" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fdba74"/>
+      <stop offset="80%" stop-color="#f97316"/>
+      <stop offset="100%" stop-color="#ea580c"/>
+    </radialGradient>
+  </defs>
+  <rect width="300" height="200" fill="#0f172a"/>
+  <!-- Tai trong hồng hào -->
+  <polygon points="105,75 85,35 125,55" fill="#f97316"/>
+  <polygon points="102,70 89,42 118,57" fill="#fbcfe8"/>
+  <polygon points="195,75 215,35 175,55" fill="#f97316"/>
+  <polygon points="198,70 211,42 182,57" fill="#fbcfe8"/>
+  <!-- Mặt mèo lông cam mềm mại -->
+  <ellipse cx="150" cy="115" rx="60" ry="50" fill="url(#catFur)"/>
+  <!-- Mắt mèo ngọc bích long lanh -->
+  <ellipse cx="130" cy="105" rx="8" ry="12" fill="#22c55e"/>
+  <ellipse cx="130" cy="105" rx="3.5" ry="9" fill="#0f172a"/>
+  <circle cx="128" cy="100" r="2.5" fill="#ffffff"/>
+  
+  <ellipse cx="170" cy="105" rx="8" ry="12" fill="#22c55e"/>
+  <ellipse cx="170" cy="105" rx="3.5" ry="9" fill="#0f172a"/>
+  <circle cx="168" cy="100" r="2.5" fill="#ffffff"/>
+  
+  <!-- Mũi hồng và má ửng hồng -->
+  <circle cx="105" cy="125" r="10" fill="#fda4af" opacity="0.6"/>
+  <circle cx="195" cy="125" r="10" fill="#fda4af" opacity="0.6"/>
+  <polygon points="146,122 154,122 150,127" fill="#f43f5e"/>
+  <path d="M150,127 Q142,137 135,133 M150,127 Q158,137 165,133" stroke="#881337" stroke-width="2.5" fill="none"/>
+  <!-- Râu mèo trắng -->
+  <line x1="85" y1="115" x2="120" y2="120" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+  <line x1="85" y1="130" x2="120" y2="126" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+  <line x1="215" y1="115" x2="180" y2="120" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+  <line x1="215" y1="130" x2="180" y2="126" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <rect width="200" height="200" fill="#1e293b"/>
+  <!-- Khuôn mặt thật: 2 bông tai đối xứng, mắt cân đối -->
+  <ellipse cx="100" cy="110" rx="45" ry="55" fill="#fde047" opacity="0.3"/>
+  <ellipse cx="100" cy="110" rx="42" ry="52" fill="#fed7aa"/>
+  <!-- Tóc -->
+  <path d="M55,110 Q50,55 100,55 Q150,55 145,110 Z" fill="#334155"/>
+  <!-- 2 Mắt chuẩn -->
+  <circle cx="85" cy="105" r="5" fill="#0f172a"/>
+  <circle cx="84" cy="103" r="2" fill="#ffffff"/>
+  <circle cx="115" cy="105" r="5" fill="#0f172a"/>
+  <circle cx="114" cy="103" r="2" fill="#ffffff"/>
+  <!-- Miệng cười mỉm -->
+  <path d="M90,135 Q100,145 110,135" stroke="#e11d48" stroke-width="2.5" fill="none"/>
+  <!-- 2 Bông tai ngọc trai đối xứng hoàn hảo -->
+  <circle cx="56" cy="120" r="4" fill="#facc15"/>
+  <circle cx="144" cy="120" r="4" fill="#facc15"/>
+</svg>

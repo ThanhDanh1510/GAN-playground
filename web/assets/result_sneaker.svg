@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" width="100%" height="100%">
+  <defs>
+    <linearGradient id="shoeLeather" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="50%" stop-color="#0369a1"/>
+      <stop offset="100%" stop-color="#075985"/>
+    </linearGradient>
+    <linearGradient id="soleGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#cbd5e1"/>
+    </linearGradient>
+    <linearGradient id="swooshGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#facc15"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="200" fill="#0f172a"/>
+  <!-- Thân giày da màu xanh dương bóng bẩy do Pix2Pix tô -->
+  <path d="M40,140 Q40,110 80,110 L130,110 L170,70 L210,75 L220,110 Q255,115 260,135 L260,150 L40,150 Z" fill="url(#shoeLeather)" stroke="#38bdf8" stroke-width="1.5"/>
+  <!-- Cổ giày có đệm êm -->
+  <polygon points="170,70 185,65 210,75 195,80" fill="#e0f2fe"/>
+  <!-- Đế giày cao su trắng có vân đệm khí -->
+  <path d="M35,150 L265,150 Q265,165 240,165 L55,165 Q35,165 35,150 Z" fill="url(#soleGrad)" stroke="#94a3b8" stroke-width="1"/>
+  <rect x="70" y="154" width="40" height="6" rx="3" fill="#38bdf8" opacity="0.6"/>
+  <!-- Logo móc màu vàng cam nổi bật -->
+  <path d="M105,130 Q140,145 185,102 Q150,122 118,126 Z" fill="url(#swooshGrad)" stroke="#ffffff" stroke-width="1"/>
+  <!-- Dây giày & Lỗ xỏ dây -->
+  <line x1="160" y1="80" x2="175" y2="100" stroke="#f8fafc" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="175" y1="80" x2="190" y2="100" stroke="#f8fafc" stroke-width="3.5" stroke-linecap="round"/>
+  <circle cx="160" cy="80" r="2.5" fill="#334155"/>
+  <circle cx="175" cy="80" r="2.5" fill="#334155"/>
+  <circle cx="175" cy="100" r="2.5" fill="#334155"/>
+  <circle cx="190" cy="100" r="2.5" fill="#334155"/>
+</svg>

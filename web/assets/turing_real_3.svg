@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <rect width="200" height="200" fill="#0f172a"/>
+  <!-- Bàn tay thật: đúng 5 ngón cân đối -->
+  <g transform="translate(45, 30)">
+    <!-- Lòng bàn tay -->
+    <path d="M25,60 Q20,110 55,115 Q90,110 85,60 Z" fill="#fed7aa"/>
+    <!-- 5 Ngón tay chuẩn -->
+    <rect x="12" y="50" width="14" height="35" rx="7" transform="rotate(-30 12 50)" fill="#fed7aa"/> <!-- Ngón cái -->
+    <rect x="25" y="15" width="12" height="50" rx="6" fill="#fed7aa"/> <!-- Ngón trỏ -->
+    <rect x="42" y="5" width="12" height="60" rx="6" fill="#fed7aa"/> <!-- Ngón giữa -->
+    <rect x="58" y="15" width="12" height="50" rx="6" fill="#fed7aa"/> <!-- Ngón áp út -->
+    <rect x="74" y="30" width="11" height="40" rx="5.5" fill="#fed7aa"/> <!-- Ngón út -->
+  </g>
+</svg>

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" width="100%" height="100%">
+  <defs>
+    <linearGradient id="wallBrick" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="roofTile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#dc2626"/>
+      <stop offset="100%" stop-color="#991b1b"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="200" fill="#0f172a"/>
+  <!-- Tường gạch ấm cúng -->
+  <rect x="80" y="90" width="140" height="85" fill="url(#wallBrick)" stroke="#b45309" stroke-width="2"/>
+  <!-- Mái ngói đỏ -->
+  <polygon points="65,90 150,30 235,90" fill="url(#roofTile)" stroke="#7f1d1d" stroke-width="2"/>
+  <!-- Cửa gỗ nâu & Khóa vàng -->
+  <rect x="130" y="125" width="40" height="50" fill="#78350f" stroke="#451a03" stroke-width="2"/>
+  <circle cx="163" cy="150" r="3" fill="#facc15"/>
+  <!-- Cửa sổ sáng ánh đèn vàng ấm áp -->
+  <rect x="95" y="105" width="25" height="25" fill="#fef08a" stroke="#ffffff" stroke-width="2"/>
+  <line x1="107.5" y1="105" x2="107.5" y2="130" stroke="#ca8a04" stroke-width="1.5"/>
+  <line x1="95" y1="117.5" x2="120" y2="117.5" stroke="#ca8a04" stroke-width="1.5"/>
+  
+  <rect x="180" y="105" width="25" height="25" fill="#fef08a" stroke="#ffffff" stroke-width="2"/>
+  <line x1="192.5" y1="105" x2="192.5" y2="130" stroke="#ca8a04" stroke-width="1.5"/>
+  <line x1="180" y1="117.5" x2="205" y2="117.5" stroke="#ca8a04" stroke-width="1.5"/>
+  
+  <!-- Bụi cây & Hoa chân tường -->
+  <ellipse cx="80" cy="175" rx="15" ry="10" fill="#22c55e"/>
+  <ellipse cx="220" cy="175" rx="15" ry="10" fill="#22c55e"/>
+</svg>

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" width="100%" height="100%">
+  <rect width="300" height="200" fill="#0f172a"/>
+  <!-- Nét phác thảo mặt mèo -->
+  <ellipse cx="150" cy="115" rx="60" ry="50" stroke="#ffffff" stroke-width="4" fill="none"/>
+  <!-- Đôi tai tam giác -->
+  <polygon points="105,75 85,35 125,55" stroke="#ffffff" stroke-width="4" fill="none" stroke-linejoin="round"/>
+  <polygon points="195,75 215,35 175,55" stroke="#ffffff" stroke-width="4" fill="none" stroke-linejoin="round"/>
+  <!-- Mắt, Mũi, Miệng, Râu -->
+  <ellipse cx="130" cy="105" rx="8" ry="12" stroke="#ffffff" stroke-width="3" fill="none"/>
+  <ellipse cx="170" cy="105" rx="8" ry="12" stroke="#ffffff" stroke-width="3" fill="none"/>
+  <polygon points="146,122 154,122 150,127" stroke="#ffffff" stroke-width="2" fill="none"/>
+  <path d="M150,127 Q142,137 135,133 M150,127 Q158,137 165,133" stroke="#ffffff" stroke-width="3" fill="none"/>
+  <line x1="85" y1="115" x2="120" y2="120" stroke="#ffffff" stroke-width="2.5"/>
+  <line x1="85" y1="130" x2="120" y2="126" stroke="#ffffff" stroke-width="2.5"/>
+  <line x1="215" y1="115" x2="180" y2="120" stroke="#ffffff" stroke-width="2.5"/>
+  <line x1="215" y1="130" x2="180" y2="126" stroke="#ffffff" stroke-width="2.5"/>
+</svg>
