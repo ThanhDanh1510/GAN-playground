@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgStudioE" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#090d16"/>
+    </radialGradient>
+    <radialGradient id="skinBaseE" cx="45%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#ffedd5"/>
+      <stop offset="60%" stop-color="#fed7aa"/>
+      <stop offset="100%" stop-color="#fba468"/>
+    </radialGradient>
+    <linearGradient id="hairGradE" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f1f5f9"/>
+      <stop offset="50%" stop-color="#cbd5e1"/>
+      <stop offset="100%" stop-color="#64748b"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="400" height="400" fill="url(#bgStudioE)"/>
+
+  <!-- Thân áo & Cổ -->
+  <path d="M120,400 Q140,310 200,310 Q260,310 280,400 Z" fill="#334155"/>
+  <path d="M170,250 L170,320 Q200,335 230,320 L230,250 Z" fill="#fba468"/>
+
+  <!-- Khuôn mặt người lớn tuổi chuẩn FFHQ -->
+  <g id="face-layer-e">
+    <path d="M132,170 Q125,90 200,85 Q275,90 268,170 Q265,260 200,270 Q135,260 132,170 Z" fill="url(#skinBaseE)"/>
+
+    <!-- Tóc bạc trắng tự nhiên -->
+    <path d="M120,150 Q118,70 200,60 Q282,70 280,150 Q265,90 200,85 Q135,90 120,150 Z" fill="url(#hairGradE)"/>
+
+    <!-- Nếp nhăn trán sâu -->
+    <path d="M150,115 Q200,108 250,115" stroke="#9a3412" stroke-width="2" stroke-linecap="round" opacity="0.6" fill="none"/>
+    <path d="M155,128 Q200,120 245,128" stroke="#9a3412" stroke-width="2" stroke-linecap="round" opacity="0.6" fill="none"/>
+    <path d="M160,140 Q200,135 240,140" stroke="#9a3412" stroke-width="1.8" stroke-linecap="round" opacity="0.5" fill="none"/>
+
+    <!-- Lông mày bạc -->
+    <path d="M148,154 Q170,148 188,154" stroke="#e2e8f0" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+    <path d="M212,154 Q230,148 252,154" stroke="#e2e8f0" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+
+    <!-- Đôi mắt hiền từ có vết chân chim -->
+    <!-- Mắt trái -->
+    <ellipse cx="168" cy="174" rx="13" ry="8" fill="#ffffff"/>
+    <circle cx="168" cy="174" r="5.5" fill="#475569"/>
+    <circle cx="168" cy="174" r="2.8" fill="#0f172a"/>
+    <circle cx="166" cy="172" r="1.5" fill="#ffffff"/>
+    <path d="M152,174 Q168,165 184,174" stroke="#64748b" stroke-width="2" fill="none"/>
+    <!-- Vết chân chim mắt trái -->
+    <path d="M150,172 L140,168" stroke="#9a3412" stroke-width="1.6" opacity="0.6"/>
+    <path d="M150,175 L138,175" stroke="#9a3412" stroke-width="1.6" opacity="0.6"/>
+    <path d="M150,178 L142,183" stroke="#9a3412" stroke-width="1.6" opacity="0.6"/>
+
+    <!-- Mắt phải -->
+    <ellipse cx="232" cy="174" rx="13" ry="8" fill="#ffffff"/>
+    <circle cx="232" cy="174" r="5.5" fill="#475569"/>
+    <circle cx="232" cy="174" r="2.8" fill="#0f172a"/>
+    <circle cx="230" cy="172" r="1.5" fill="#ffffff"/>
+    <path d="M216,174 Q232,165 248,174" stroke="#64748b" stroke-width="2" fill="none"/>
+    <!-- Vết chân chim mắt phải -->
+    <path d="M250,172 L260,168" stroke="#9a3412" stroke-width="1.6" opacity="0.6"/>
+    <path d="M250,175 L262,175" stroke="#9a3412" stroke-width="1.6" opacity="0.6"/>
+    <path d="M250,178 L258,183" stroke="#9a3412" stroke-width="1.6" opacity="0.6"/>
+
+    <!-- Mũi -->
+    <path d="M200,165 L195,208 Q192,218 200,219 Q208,218 205,208 Z" fill="#ea580c" opacity="0.3"/>
+
+    <!-- Nếp rãnh cười (Nasolabial Folds) -->
+    <path d="M178,205 Q170,230 168,252" stroke="#9a3412" stroke-width="2" stroke-linecap="round" opacity="0.5" fill="none"/>
+    <path d="M222,205 Q230,230 232,252" stroke="#9a3412" stroke-width="2" stroke-linecap="round" opacity="0.5" fill="none"/>
+
+    <!-- Miệng & Môi -->
+    <path d="M180,244 Q200,248 220,244" stroke="#be123c" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  </g>
+</svg>

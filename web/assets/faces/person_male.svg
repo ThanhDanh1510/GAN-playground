@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <defs>
+    <!-- Ánh sáng studio chân dung -->
+    <radialGradient id="bgStudioM" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#090d16"/>
+    </radialGradient>
+    <radialGradient id="skinBaseM" cx="45%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#ffedd5"/>
+      <stop offset="60%" stop-color="#fed7aa"/>
+      <stop offset="100%" stop-color="#fdba74"/>
+    </radialGradient>
+    <linearGradient id="hairGradM" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#475569"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="shirtM" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#0369a1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Nền Studio -->
+  <rect width="400" height="400" fill="url(#bgStudioM)"/>
+
+  <!-- Thân áo & Cổ -->
+  <g id="body-layer">
+    <path d="M120,400 Q140,310 200,310 Q260,310 280,400 Z" fill="url(#shirtM)"/>
+    <path d="M170,250 L170,320 Q200,335 230,320 L230,250 Z" fill="#fdba74"/>
+    <!-- Đổ bóng dưới cằm -->
+    <path d="M165,240 Q200,270 235,240 Z" fill="#ea580c" opacity="0.3"/>
+  </g>
+
+  <!-- Khuôn mặt nam giới chuẩn FFHQ -->
+  <g id="face-layer">
+    <!-- Hình khối đầu -->
+    <path d="M130,170 Q125,90 200,85 Q275,90 270,170 Q268,260 200,270 Q132,260 130,170 Z" fill="url(#skinBaseM)"/>
+    
+    <!-- Hai tai -->
+    <ellipse cx="127" cy="180" rx="10" ry="18" fill="#fed7aa"/>
+    <ellipse cx="273" cy="180" rx="10" ry="18" fill="#fed7aa"/>
+
+    <!-- Tóc nam hiện đại -->
+    <path d="M122,150 Q120,70 200,65 Q280,70 278,150 Q265,95 200,90 Q135,95 122,150 Z" fill="url(#hairGradM)"/>
+
+    <!-- Lông mày rậm nam tính -->
+    <path d="M148,152 Q170,145 188,150" stroke="#1e293b" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+    <path d="M212,150 Q230,145 252,152" stroke="#1e293b" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+
+    <!-- Đôi mắt sâu có hồn -->
+    <!-- Mắt trái -->
+    <ellipse cx="168" cy="172" rx="14" ry="9" fill="#ffffff"/>
+    <circle cx="168" cy="172" r="6" fill="#78350f"/>
+    <circle cx="168" cy="172" r="3" fill="#0f172a"/>
+    <circle cx="166" cy="170" r="1.8" fill="#ffffff"/>
+    <path d="M152,172 Q168,162 184,172" stroke="#475569" stroke-width="2" fill="none"/>
+
+    <!-- Mắt phải -->
+    <ellipse cx="232" cy="172" rx="14" ry="9" fill="#ffffff"/>
+    <circle cx="232" cy="172" r="6" fill="#78350f"/>
+    <circle cx="232" cy="172" r="3" fill="#0f172a"/>
+    <circle cx="230" cy="170" r="1.8" fill="#ffffff"/>
+    <path d="M216,172 Q232,162 248,172" stroke="#475569" stroke-width="2" fill="none"/>
+
+    <!-- Mũi cao thanh tú -->
+    <path d="M200,165 L196,205 Q193,215 200,216 Q207,215 204,205 Z" fill="#fb923c" opacity="0.4"/>
+    <ellipse cx="193" cy="214" rx="3.5" ry="2" fill="#9a3412" opacity="0.6"/>
+    <ellipse cx="207" cy="214" rx="3.5" ry="2" fill="#9a3412" opacity="0.6"/>
+
+    <!-- Miệng & Môi -->
+    <path d="M178,240 Q200,246 222,240" stroke="#be123c" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <path d="M182,241 Q200,248 218,241" fill="#fda4af" opacity="0.5"/>
+  </g>
+</svg>

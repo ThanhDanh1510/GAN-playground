@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgStudioF" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#475569"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </radialGradient>
+    <radialGradient id="skinBaseF" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#fff1f2"/>
+      <stop offset="60%" stop-color="#ffe4e6"/>
+      <stop offset="100%" stop-color="#fecdd3"/>
+    </radialGradient>
+    <linearGradient id="hairGradF" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="50%" stop-color="#d97706"/>
+      <stop offset="100%" stop-color="#92400e"/>
+    </linearGradient>
+    <linearGradient id="shirtF" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e11d48"/>
+      <stop offset="100%" stop-color="#be123c"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Nền Studio -->
+  <rect width="400" height="400" fill="url(#bgStudioF)"/>
+
+  <!-- Tóc dài buông xõa phía sau -->
+  <path d="M100,160 Q80,260 90,380 L310,380 Q320,260 300,160 Z" fill="url(#hairGradF)"/>
+
+  <!-- Thân áo & Cổ -->
+  <g id="body-layer-f">
+    <path d="M130,400 Q150,320 200,320 Q250,320 270,400 Z" fill="url(#shirtF)"/>
+    <path d="M175,250 L175,320 Q200,335 225,320 L225,250 Z" fill="#ffe4e6"/>
+  </g>
+
+  <!-- Khuôn mặt nữ giới chuẩn FFHQ -->
+  <g id="face-layer-f">
+    <path d="M136,170 Q130,95 200,90 Q270,95 264,170 Q260,255 200,265 Q140,255 136,170 Z" fill="url(#skinBaseF)"/>
+
+    <!-- Má hồng mịn -->
+    <ellipse cx="155" cy="205" rx="18" ry="12" fill="#fb7185" opacity="0.3"/>
+    <ellipse cx="245" cy="205" rx="18" ry="12" fill="#fb7185" opacity="0.3"/>
+
+    <!-- Tóc mái & Tóc ôm mặt -->
+    <path d="M125,145 Q130,70 200,68 Q270,70 275,145 Q260,85 200,85 Q140,85 125,145 Z" fill="url(#hairGradF)"/>
+    <path d="M125,145 Q135,210 142,260 Q130,220 125,145 Z" fill="url(#hairGradF)"/>
+    <path d="M275,145 Q265,210 258,260 Q270,220 275,145 Z" fill="url(#hairGradF)"/>
+
+    <!-- Lông mày lá liễu thanh mảnh -->
+    <path d="M152,150 Q170,140 188,148" stroke="#78350f" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <path d="M212,148 Q230,140 248,150" stroke="#78350f" stroke-width="3" stroke-linecap="round" fill="none"/>
+
+    <!-- Đôi mắt to tròn long lanh có hàng mi cong -->
+    <!-- Mắt trái -->
+    <ellipse cx="170" cy="168" rx="14" ry="10" fill="#ffffff"/>
+    <circle cx="170" cy="168" r="6.5" fill="#0284c7"/>
+    <circle cx="170" cy="168" r="3.2" fill="#0f172a"/>
+    <circle cx="168" cy="166" r="2" fill="#ffffff"/>
+    <path d="M154,168 Q170,154 186,168" stroke="#0f172a" stroke-width="2.5" fill="none"/>
+    <!-- Lông mi cong -->
+    <line x1="158" y1="162" x2="154" y2="157" stroke="#0f172a" stroke-width="1.8"/>
+    <line x1="168" y1="158" x2="166" y2="152" stroke="#0f172a" stroke-width="1.8"/>
+    <line x1="178" y1="160" x2="182" y2="155" stroke="#0f172a" stroke-width="1.8"/>
+
+    <!-- Mắt phải -->
+    <ellipse cx="230" cy="168" rx="14" ry="10" fill="#ffffff"/>
+    <circle cx="230" cy="168" r="6.5" fill="#0284c7"/>
+    <circle cx="230" cy="168" r="3.2" fill="#0f172a"/>
+    <circle cx="228" cy="166" r="2" fill="#ffffff"/>
+    <path d="M214,168 Q230,154 246,168" stroke="#0f172a" stroke-width="2.5" fill="none"/>
+    <!-- Lông mi cong -->
+    <line x1="222" y1="160" x2="218" y2="155" stroke="#0f172a" stroke-width="1.8"/>
+    <line x1="232" y1="158" x2="234" y2="152" stroke="#0f172a" stroke-width="1.8"/>
+    <line x1="242" y1="162" x2="246" y2="157" stroke="#0f172a" stroke-width="1.8"/>
+
+    <!-- Mũi nhỏ nhắn -->
+    <path d="M200,165 L197,200 Q196,208 200,209 Q204,208 203,200 Z" fill="#fb7185" opacity="0.3"/>
+    <ellipse cx="195" cy="207" rx="2.5" ry="1.5" fill="#9f1239" opacity="0.4"/>
+    <ellipse cx="205" cy="207" rx="2.5" ry="1.5" fill="#9f1239" opacity="0.4"/>
+
+    <!-- Môi hồng căng mọng tươi tắn -->
+    <path d="M180,234 Q200,240 220,234 Q200,246 180,234 Z" fill="#f43f5e"/>
+    <path d="M180,234 Q200,231 220,234 Q200,227 180,234 Z" fill="#fb7185"/>
+  </g>
+</svg>
