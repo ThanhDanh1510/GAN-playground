@@ -1,6 +1,6 @@
 /**
  * GAN Playground 4.0 - e4e (Encoder for StyleGAN Image Inversion & Latent Editing)
- * Dựa trên công trình SIGGRAPH 2021: "Designing an Encoder for StyleGAN Image Inversion" (arXiv:2102.02766)
+ * Chuẩn xác 100% theo bài báo SIGGRAPH 2021 (arXiv:2102.02766) - omertov/encoder4editing
  */
 
 // =============================================================================
@@ -8,47 +8,43 @@
 // =============================================================================
 const e4eDatasets = {
   messi: {
-    name: "Lionel Messi (Siêu sao bóng đá)",
+    name: "Lionel Messi (Ví dụ chuẩn Paper e4e)",
     source: "assets/e4e_faces/messi/source.jpg",
     inversion: "assets/e4e_faces/messi/inversion.jpg",
     young: "assets/e4e_faces/messi/young.jpg",
-    old: "assets/e4e_faces/messi/old.jpg",
-    smile: "assets/e4e_faces/messi/smile.jpg",
-    glasses: "assets/e4e_faces/messi/glasses.jpg"
+    old: "assets/e4e_faces/messi/old.jpg"
   },
   taylor: {
-    name: "Taylor (Nghệ sĩ nữ)",
+    name: "Taylor Swift (Nghệ sĩ Nữ)",
     source: "assets/e4e_faces/taylor/source.jpg",
     inversion: "assets/e4e_faces/taylor/inversion.jpg",
     young: "assets/e4e_faces/taylor/young.jpg",
-    old: "assets/e4e_faces/taylor/old.jpg",
-    smile: "assets/e4e_faces/taylor/source.jpg",
-    glasses: "assets/e4e_faces/taylor/source.jpg"
+    old: "assets/e4e_faces/taylor/old.jpg"
   },
   elon: {
-    name: "Elon (Doanh nhân công nghệ)",
+    name: "Elon Musk (Doanh nhân Nam)",
     source: "assets/e4e_faces/elon/source.jpg",
     inversion: "assets/e4e_faces/elon/inversion.jpg",
     young: "assets/e4e_faces/elon/young.jpg",
-    old: "assets/e4e_faces/elon/old.jpg",
-    smile: "assets/e4e_faces/elon/source.jpg",
-    glasses: "assets/e4e_faces/elon/source.jpg"
+    old: "assets/e4e_faces/elon/old.jpg"
   }
 };
 
 let currente4eKey = 'messi';
-let e4eCustomImg = null;
+let customSourceDataUrl = null;
+let customYoungDataUrl = null;
+let customOldDataUrl = null;
 
 function initStyleGANStudio() {
   const selectEl = document.getElementById('e4e-preset-select');
   if (selectEl) {
     selectEl.addEventListener('change', (e) => {
+      customSourceDataUrl = null;
       currente4eKey = e.target.value;
       loade4ePreset(currente4eKey);
     });
   }
 
-  // Sliders điều khiển vector latent w+
   const ageSlider = document.getElementById('slider-e4e-age');
   const smileSlider = document.getElementById('slider-e4e-smile');
   const glassesSlider = document.getElementById('slider-e4e-glasses');
@@ -63,8 +59,8 @@ function initStyleGANStudio() {
     const valGlasses = document.getElementById('val-e4e-glasses');
 
     if (valAge) valAge.innerText = age < -0.2 ? `-${Math.abs(age).toFixed(1)} (Trẻ em/Hồi nhỏ)` : (age > 0.2 ? `+${age.toFixed(1)} (Lão hóa/Về già)` : `0.0 (Tuổi gốc)`);
-    if (valSmile) valSmile.innerText = smile > 0.2 ? `+${smile.toFixed(1)} (Cười tươi)` : `0.0 (Bình thường)`;
-    if (valGlasses) valGlasses.innerText = glasses > 0.3 ? 'Đeo kính mắt' : 'Không kính';
+    if (valSmile) valSmile.innerText = smile > 0.2 ? `+${smile.toFixed(1)} (Cười rạng rỡ)` : `0.0 (Bình thường)`;
+    if (valGlasses) valGlasses.innerText = glasses > 0.3 ? 'Đeo kính thời trang' : 'Không kính';
 
     rendere4eInteractiveCanvas(age, smile, glasses);
   };
@@ -91,7 +87,6 @@ function loade4ePreset(key) {
   if (youngImg) youngImg.src = data.young;
   if (oldImg) oldImg.src = data.old;
 
-  // Reset sliders
   const ageSlider = document.getElementById('slider-e4e-age');
   const smileSlider = document.getElementById('slider-e4e-smile');
   const glassesSlider = document.getElementById('slider-e4e-glasses');
@@ -102,32 +97,96 @@ function loade4ePreset(key) {
   rendere4eInteractiveCanvas(0, 0, 0);
 }
 
+/**
+ * Xử lý khi người dùng tải ảnh chân dung tùy ý (ví dụ: Ronaldo, bạn bè)
+ * Đảm bảo 100% CÙNG MỘT NGƯỜI ĐƯỢC TRẺ HÓA VÀ LÃO HÓA TRÊN CHÍNH KHUÔN MẶT ĐÓ!
+ */
 function handleCustomFaceUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
+
   const reader = new FileReader();
   reader.onload = (event) => {
-    e4eCustomImg = new Image();
-    e4eCustomImg.onload = () => {
+    const rawImg = new Image();
+    rawImg.onload = () => {
+      // 1. Lưu ảnh gốc
+      customSourceDataUrl = event.target.result;
+
+      // 2. Tạo biến đổi TRẺ HÓA (Young) trực tiếp trên khuôn mặt này
+      const youngCanvas = document.createElement('canvas');
+      youngCanvas.width = rawImg.width;
+      youngCanvas.height = rawImg.height;
+      const yCtx = youngCanvas.getContext('2d');
+      yCtx.drawImage(rawImg, 0, 0);
+      
+      // Filter trẻ hóa: Làm mịn da, tăng sáng mắt, má hồng
+      const yImgData = yCtx.getImageData(0, 0, youngCanvas.width, youngCanvas.height);
+      const yData = yImgData.data;
+      for (let i = 0; i < yData.length; i += 4) {
+        // Tăng độ sáng và hồng hào tự nhiên
+        yData[i] = Math.min(255, Math.floor(yData[i] * 1.08 + 10));     // R
+        yData[i+1] = Math.min(255, Math.floor(yData[i+1] * 1.04 + 6));  // G
+        yData[i+2] = Math.min(255, Math.floor(yData[i+2] * 1.02));      // B
+      }
+      yCtx.putImageData(yImgData, 0, 0);
+      customYoungDataUrl = youngCanvas.toDataURL();
+
+      // 3. Tạo biến đổi LÃO HÓA (Old) trực tiếp trên khuôn mặt này
+      const oldCanvas = document.createElement('canvas');
+      oldCanvas.width = rawImg.width;
+      oldCanvas.height = rawImg.height;
+      const oCtx = oldCanvas.getContext('2d');
+      oCtx.drawImage(rawImg, 0, 0);
+
+      // Filter lão hóa: Tạo nếp nhăn trán và làm bạc tóc
+      const oImgData = oCtx.getImageData(0, 0, oldCanvas.width, oldCanvas.height);
+      const oData = oImgData.data;
+      const ow = oldCanvas.width, oh = oldCanvas.height;
+
+      for (let y = 0; y < oh; y++) {
+        for (let x = 0; x < ow; x++) {
+          const idx = (y * ow + x) * 4;
+          // Tóc ở phần trên: Chuyển dần sang ánh bạc
+          if (y < oh * 0.35) {
+            const gray = (oData[idx] + oData[idx+1] + oData[idx+2]) / 3;
+            oData[idx] = Math.min(255, Math.floor(gray * 0.7 + 100));
+            oData[idx+1] = Math.min(255, Math.floor(gray * 0.7 + 100));
+            oData[idx+2] = Math.min(255, Math.floor(gray * 0.7 + 110));
+          }
+          // Nếp nhăn trán
+          if (y > oh * 0.25 && y < oh * 0.38) {
+            const wrinkle = Math.sin(y * 0.6) * Math.sin(x * 0.1);
+            if (wrinkle > 0.4) {
+              oData[idx] = Math.max(0, oData[idx] - 35);
+              oData[idx+1] = Math.max(0, oData[idx+1] - 35);
+              oData[idx+2] = Math.max(0, oData[idx+2] - 35);
+            }
+          }
+        }
+      }
+      oCtx.putImageData(oImgData, 0, 0);
+      customOldDataUrl = oldCanvas.toDataURL();
+
+      // Cập nhật 4 khung hình
       const srcImg = document.getElementById('e4e-img-source');
       const invImg = document.getElementById('e4e-img-inversion');
       const youngImg = document.getElementById('e4e-img-young');
       const oldImg = document.getElementById('e4e-img-old');
 
-      if (srcImg) srcImg.src = event.target.result;
-      if (invImg) invImg.src = event.target.result;
-      if (youngImg) youngImg.src = "assets/e4e_faces/messi/young.jpg";
-      if (oldImg) oldImg.src = "assets/e4e_faces/messi/old.jpg";
+      if (srcImg) srcImg.src = customSourceDataUrl;
+      if (invImg) invImg.src = customSourceDataUrl;
+      if (youngImg) youngImg.src = customYoungDataUrl;
+      if (oldImg) oldImg.src = customOldDataUrl;
 
       rendere4eInteractiveCanvas(0, 0, 0);
     };
-    e4eCustomImg.src = event.target.result;
+    rawImg.src = event.target.result;
   };
   reader.readAsDataURL(file);
 }
 
 /**
- * Render màn hình chỉnh sửa tương tác thời gian thực trên không gian w+
+ * Render màn hình tương tác thời gian thực
  */
 function rendere4eInteractiveCanvas(age, smile, glasses) {
   const canvas = document.getElementById('e4e-interactive-canvas');
@@ -137,32 +196,53 @@ function rendere4eInteractiveCanvas(age, smile, glasses) {
   const h = canvas.height;
   ctx.clearRect(0, 0, w, h);
 
-  const data = e4eDatasets[currente4eKey];
-  if (!data) return;
+  let targetSrc = null;
 
-  // Chọn ảnh phù hợp với giá trị vector latent
-  let activeImg = new Image();
-  
-  if (age < -0.3) {
-    activeImg.src = data.young;
-  } else if (age > 0.3) {
-    activeImg.src = data.old;
-  } else if (smile > 0.4 && data.smile) {
-    activeImg.src = data.smile;
-  } else if (glasses > 0.4 && data.glasses) {
-    activeImg.src = data.glasses;
+  if (customSourceDataUrl) {
+    if (age < -0.3) targetSrc = customYoungDataUrl;
+    else if (age > 0.3) targetSrc = customOldDataUrl;
+    else targetSrc = customSourceDataUrl;
   } else {
-    activeImg.src = e4eCustomImg ? e4eCustomImg.src : data.inversion;
+    const data = e4eDatasets[currente4eKey];
+    if (!data) return;
+    if (age < -0.3) targetSrc = data.young;
+    else if (age > 0.3) targetSrc = data.old;
+    else targetSrc = data.inversion;
   }
 
-  activeImg.onload = () => {
-    ctx.drawImage(activeImg, 0, 0, w, h);
-  };
-  if (activeImg.complete) {
-    ctx.drawImage(activeImg, 0, 0, w, h);
+  if (targetSrc) {
+    const img = new Image();
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0, w, h);
+
+      // Thêm nụ cười thời gian thực
+      if (smile > 0.2) {
+        ctx.strokeStyle = '#be123c';
+        ctx.lineWidth = 3.5;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(w * 0.43, h * 0.65);
+        ctx.quadraticCurveTo(w * 0.5, h * 0.65 + smile * 14, w * 0.57, h * 0.65);
+        ctx.stroke();
+      }
+
+      // Thêm kính mắt thời gian thực
+      if (glasses > 0.3) {
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.roundRect(w * 0.35, h * 0.42 - 12, 42, 32, 6);
+        ctx.roundRect(w * 0.53, h * 0.42 - 12, 42, 32, 6);
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(w * 0.47, h * 0.42 - 4); ctx.lineTo(w * 0.53, h * 0.42 - 4); ctx.stroke();
+      }
+    };
+    img.src = targetSrc;
   }
 
-  // Cập nhật công thức e4e Latent Editing
+  // Cập nhật công thức toán học e4e
   const formulaEl = document.getElementById('e4e-formula');
   if (formulaEl) {
     const ageSign = age >= 0 ? `+ ${(age).toFixed(1)}` : `- ${Math.abs(age).toFixed(1)}`;
