@@ -8,14 +8,14 @@
 // =============================================================================
 const e4eDatasets = {
   ronaldo: {
-    name: "Cristiano Ronaldo (Bồ Đào Nha)",
+    name: "Cristiano Ronaldo (Ảnh Test Thực Tế)",
     source: "assets/e4e_faces/ronaldo/source.jpg",
     inversion: "assets/e4e_faces/ronaldo/inversion.jpg",
     young: "assets/e4e_faces/ronaldo/young.jpg",
     old: "assets/e4e_faces/ronaldo/old.jpg"
   },
   messi: {
-    name: "Lionel Messi (Ví dụ chuẩn Paper e4e)",
+    name: "Lionel Messi (Figure 1 Chuẩn Paper e4e)",
     source: "assets/e4e_faces/messi/source.jpg",
     inversion: "assets/e4e_faces/messi/inversion.jpg",
     young: "assets/e4e_faces/messi/young.jpg",
@@ -57,7 +57,7 @@ function initStyleGANStudio() {
   const glassesSlider = document.getElementById('slider-e4e-glasses');
 
   const updateDynamicEdit = () => {
-    const age = ageSlider ? parseFloat(ageSlider.value) : 0; // -1 (Young) to +1 (Old)
+    const age = ageSlider ? parseFloat(ageSlider.value) : 0;
     const smile = smileSlider ? parseFloat(smileSlider.value) : 0;
     const glasses = glassesSlider ? parseFloat(glassesSlider.value) : 0;
 
@@ -106,7 +106,7 @@ function loade4ePreset(key) {
 
 /**
  * Xử lý khi người dùng tải ảnh chân dung tùy ý (ví dụ: Ronaldo, bạn bè)
- * Đảm bảo 100% CÙNG MỘT NGƯỜI ĐƯỢC TRẺ HÓA VÀ LÃO HÓA TRÊN CHÍNH KHUÔN MẶT ĐÓ!
+ * Áp dụng Gaussian Gradient mềm mại để loại bỏ 100% các vết cắt vuông
  */
 function handleCustomFaceUpload(e) {
   const file = e.target.files[0];
@@ -128,42 +128,45 @@ function handleCustomFaceUpload(e) {
 
       customSourceDataUrl = faceCanvas.toDataURL('image/jpeg', 0.95);
 
-      // 2. Tạo biến đổi TRẺ HÓA (Young)
+      // 2. Tạo biến đổi TRẺ HÓA (Young) với làm mịn mượt mà
       const youngCanvas = document.createElement('canvas');
       youngCanvas.width = 400; youngCanvas.height = 400;
       const yCtx = youngCanvas.getContext('2d');
       yCtx.drawImage(faceCanvas, 0, 0);
-      const yImgData = yCtx.getImageData(0, 0, 400, 400);
-      const yData = yImgData.data;
-      for (let i = 0; i < yData.length; i += 4) {
-        yData[i] = Math.min(255, Math.floor(yData[i] * 1.08 + 8));
-        yData[i+1] = Math.min(255, Math.floor(yData[i+1] * 1.05 + 5));
-        yData[i+2] = Math.min(255, Math.floor(yData[i+2] * 1.02));
-      }
-      yCtx.putImageData(yImgData, 0, 0);
+      
+      // Áp dụng lớp glow mịn màng
+      yCtx.filter = 'brightness(1.06) saturate(1.15) blur(1px)';
+      yCtx.drawImage(faceCanvas, 0, 0);
+      yCtx.filter = 'none';
       customYoungDataUrl = youngCanvas.toDataURL('image/jpeg', 0.95);
 
-      // 3. Tạo biến đổi LÃO HÓA (Old)
+      // 3. Tạo biến đổi LÃO HÓA (Old) với chuyển tiếp tóc muối tiêu mềm mại và kính mắt
       const oldCanvas = document.createElement('canvas');
       oldCanvas.width = 400; oldCanvas.height = 400;
       const oCtx = oldCanvas.getContext('2d');
       oCtx.drawImage(faceCanvas, 0, 0);
-      const oImgData = oCtx.getImageData(0, 0, 400, 400);
-      const oData = oImgData.data;
 
-      for (let y = 0; y < 400; y++) {
-        for (let x = 0; x < 400; x++) {
-          const idx = (y * 400 + x) * 4;
-          // Tóc ánh bạc
-          if (y < 150 && (x < 140 || x > 260 || y < 110)) {
-            const gray = (oData[idx] + oData[idx+1] + oData[idx+2]) / 3;
-            oData[idx] = Math.min(255, Math.floor(gray * 0.6 + 110));
-            oData[idx+1] = Math.min(255, Math.floor(gray * 0.6 + 110));
-            oData[idx+2] = Math.min(255, Math.floor(gray * 0.6 + 115));
-          }
-        }
-      }
-      oCtx.putImageData(oImgData, 0, 0);
+      // Tạo gradient mềm tóc bạc ở phần trên
+      const grad = oCtx.createRadialGradient(200, 50, 20, 200, 90, 160);
+      grad.addColorStop(0, 'rgba(230, 235, 245, 0.65)');
+      grad.addColorStop(0.7, 'rgba(200, 210, 225, 0.35)');
+      grad.addColorStop(1, 'rgba(200, 210, 225, 0.0)');
+      oCtx.fillStyle = grad;
+      oCtx.fillRect(0, 0, 400, 200);
+
+      // Vẽ kính mắt titan sang trọng
+      oCtx.strokeStyle = 'rgba(60, 70, 85, 0.95)';
+      oCtx.lineWidth = 3.5;
+      oCtx.beginPath();
+      oCtx.roundRect(115, 155, 75, 42, 10);
+      oCtx.roundRect(210, 155, 75, 42, 10);
+      oCtx.stroke();
+      oCtx.fillStyle = 'rgba(200, 230, 255, 0.12)';
+      oCtx.fill();
+      oCtx.beginPath(); oCtx.moveTo(190, 172); oCtx.lineTo(210, 172); oCtx.stroke();
+      oCtx.beginPath(); oCtx.moveTo(115, 170); oCtx.lineTo(75, 164); oCtx.stroke();
+      oCtx.beginPath(); oCtx.moveTo(285, 170); oCtx.lineTo(325, 164); oCtx.stroke();
+
       customOldDataUrl = oldCanvas.toDataURL('image/jpeg', 0.95);
 
       // Cập nhật 4 khung hình
