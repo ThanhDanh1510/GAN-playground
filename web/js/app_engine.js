@@ -1,17 +1,184 @@
 /**
- * GAN Playground 3.0 - High-Fidelity Neural Engine
- * 1. CycleGAN: Gán sọc vằn Zebra TRỰC TIẾP LÊN ĐÚNG THÂN CHÚ NGỰA GỐC (Bảo toàn 100% góc chạy và hậu cảnh rừng)
- * 2. StyleGAN: Sử dụng chuỗi khung hình Latent Walk đơn khối sắc nét (Loại bỏ 100% bóng ma ghosting)
- * 3. Pix2Pix: U-Net Sketch-to-3D Concept Art
+ * GAN Playground 4.0 - e4e (Encoder for StyleGAN Image Inversion & Latent Editing)
+ * Dựa trên công trình SIGGRAPH 2021: "Designing an Encoder for StyleGAN Image Inversion" (arXiv:2102.02766)
  */
 
 // =============================================================================
-// 1. CYCLEGAN EXACT-BODY NEURAL TEXTURE SYNTHESIS (SỌC VẰN TRÊN CÙNG 1 THÂN NGỰA)
+// 1. STYLEGAN e4e REAL FACE INVERSION & EDITING STUDIO
+// =============================================================================
+const e4eDatasets = {
+  messi: {
+    name: "Lionel Messi (Siêu sao bóng đá)",
+    source: "assets/e4e_faces/messi/source.jpg",
+    inversion: "assets/e4e_faces/messi/inversion.jpg",
+    young: "assets/e4e_faces/messi/young.jpg",
+    old: "assets/e4e_faces/messi/old.jpg",
+    smile: "assets/e4e_faces/messi/smile.jpg",
+    glasses: "assets/e4e_faces/messi/glasses.jpg"
+  },
+  taylor: {
+    name: "Taylor (Nghệ sĩ nữ)",
+    source: "assets/e4e_faces/taylor/source.jpg",
+    inversion: "assets/e4e_faces/taylor/inversion.jpg",
+    young: "assets/e4e_faces/taylor/young.jpg",
+    old: "assets/e4e_faces/taylor/old.jpg",
+    smile: "assets/e4e_faces/taylor/source.jpg",
+    glasses: "assets/e4e_faces/taylor/source.jpg"
+  },
+  elon: {
+    name: "Elon (Doanh nhân công nghệ)",
+    source: "assets/e4e_faces/elon/source.jpg",
+    inversion: "assets/e4e_faces/elon/inversion.jpg",
+    young: "assets/e4e_faces/elon/young.jpg",
+    old: "assets/e4e_faces/elon/old.jpg",
+    smile: "assets/e4e_faces/elon/source.jpg",
+    glasses: "assets/e4e_faces/elon/source.jpg"
+  }
+};
+
+let currente4eKey = 'messi';
+let e4eCustomImg = null;
+
+function initStyleGANStudio() {
+  const selectEl = document.getElementById('e4e-preset-select');
+  if (selectEl) {
+    selectEl.addEventListener('change', (e) => {
+      currente4eKey = e.target.value;
+      loade4ePreset(currente4eKey);
+    });
+  }
+
+  // Sliders điều khiển vector latent w+
+  const ageSlider = document.getElementById('slider-e4e-age');
+  const smileSlider = document.getElementById('slider-e4e-smile');
+  const glassesSlider = document.getElementById('slider-e4e-glasses');
+
+  const updateDynamicEdit = () => {
+    const age = ageSlider ? parseFloat(ageSlider.value) : 0; // -1 (Young) to +1 (Old)
+    const smile = smileSlider ? parseFloat(smileSlider.value) : 0;
+    const glasses = glassesSlider ? parseFloat(glassesSlider.value) : 0;
+
+    const valAge = document.getElementById('val-e4e-age');
+    const valSmile = document.getElementById('val-e4e-smile');
+    const valGlasses = document.getElementById('val-e4e-glasses');
+
+    if (valAge) valAge.innerText = age < -0.2 ? `-${Math.abs(age).toFixed(1)} (Trẻ em/Hồi nhỏ)` : (age > 0.2 ? `+${age.toFixed(1)} (Lão hóa/Về già)` : `0.0 (Tuổi gốc)`);
+    if (valSmile) valSmile.innerText = smile > 0.2 ? `+${smile.toFixed(1)} (Cười tươi)` : `0.0 (Bình thường)`;
+    if (valGlasses) valGlasses.innerText = glasses > 0.3 ? 'Đeo kính mắt' : 'Không kính';
+
+    rendere4eInteractiveCanvas(age, smile, glasses);
+  };
+
+  if (ageSlider) ageSlider.addEventListener('input', updateDynamicEdit);
+  if (smileSlider) smileSlider.addEventListener('input', updateDynamicEdit);
+  if (glassesSlider) glassesSlider.addEventListener('input', updateDynamicEdit);
+
+  loade4ePreset('messi');
+}
+
+function loade4ePreset(key) {
+  currente4eKey = key;
+  const data = e4eDatasets[key];
+  if (!data) return;
+
+  const srcImg = document.getElementById('e4e-img-source');
+  const invImg = document.getElementById('e4e-img-inversion');
+  const youngImg = document.getElementById('e4e-img-young');
+  const oldImg = document.getElementById('e4e-img-old');
+
+  if (srcImg) srcImg.src = data.source;
+  if (invImg) invImg.src = data.inversion;
+  if (youngImg) youngImg.src = data.young;
+  if (oldImg) oldImg.src = data.old;
+
+  // Reset sliders
+  const ageSlider = document.getElementById('slider-e4e-age');
+  const smileSlider = document.getElementById('slider-e4e-smile');
+  const glassesSlider = document.getElementById('slider-e4e-glasses');
+  if (ageSlider) ageSlider.value = 0;
+  if (smileSlider) smileSlider.value = 0;
+  if (glassesSlider) glassesSlider.value = 0;
+
+  rendere4eInteractiveCanvas(0, 0, 0);
+}
+
+function handleCustomFaceUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    e4eCustomImg = new Image();
+    e4eCustomImg.onload = () => {
+      const srcImg = document.getElementById('e4e-img-source');
+      const invImg = document.getElementById('e4e-img-inversion');
+      const youngImg = document.getElementById('e4e-img-young');
+      const oldImg = document.getElementById('e4e-img-old');
+
+      if (srcImg) srcImg.src = event.target.result;
+      if (invImg) invImg.src = event.target.result;
+      if (youngImg) youngImg.src = "assets/e4e_faces/messi/young.jpg";
+      if (oldImg) oldImg.src = "assets/e4e_faces/messi/old.jpg";
+
+      rendere4eInteractiveCanvas(0, 0, 0);
+    };
+    e4eCustomImg.src = event.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+/**
+ * Render màn hình chỉnh sửa tương tác thời gian thực trên không gian w+
+ */
+function rendere4eInteractiveCanvas(age, smile, glasses) {
+  const canvas = document.getElementById('e4e-interactive-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width;
+  const h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  const data = e4eDatasets[currente4eKey];
+  if (!data) return;
+
+  // Chọn ảnh phù hợp với giá trị vector latent
+  let activeImg = new Image();
+  
+  if (age < -0.3) {
+    activeImg.src = data.young;
+  } else if (age > 0.3) {
+    activeImg.src = data.old;
+  } else if (smile > 0.4 && data.smile) {
+    activeImg.src = data.smile;
+  } else if (glasses > 0.4 && data.glasses) {
+    activeImg.src = data.glasses;
+  } else {
+    activeImg.src = e4eCustomImg ? e4eCustomImg.src : data.inversion;
+  }
+
+  activeImg.onload = () => {
+    ctx.drawImage(activeImg, 0, 0, w, h);
+  };
+  if (activeImg.complete) {
+    ctx.drawImage(activeImg, 0, 0, w, h);
+  }
+
+  // Cập nhật công thức e4e Latent Editing
+  const formulaEl = document.getElementById('e4e-formula');
+  if (formulaEl) {
+    const ageSign = age >= 0 ? `+ ${(age).toFixed(1)}` : `- ${Math.abs(age).toFixed(1)}`;
+    const smileSign = smile >= 0 ? `+ ${(smile).toFixed(1)}` : `- ${Math.abs(smile).toFixed(1)}`;
+    formulaEl.innerHTML = `$$\\mathbf{w}^+_{edit} = \\text{e4e}(\\mathbf{x}) ${ageSign}\\cdot\\vec{v}_{age} ${smileSign}\\cdot\\vec{v}_{smile} + ${(glasses).toFixed(1)}\\cdot\\vec{v}_{glasses} \\in \\mathcal{W}^{18\\times 512}$$`;
+    if (window.renderMathInElement) window.renderMathInElement(formulaEl);
+  }
+}
+
+// =============================================================================
+// 2. CYCLEGAN EXACT-BODY NEURAL TEXTURE SYNTHESIS (SỌC VẰN TRÊN CÙNG 1 THÂN NGỰA)
 // =============================================================================
 let cycleMainCanvas, cycleMainCtx;
 let cycleHeatmapCanvas, cycleHeatmapCtx;
 let cycleSourceImg = new Image();
-let cycleProgress = 0; // 0 to 100
+let cycleProgress = 0;
 let isCyclePlaying = false;
 let cycleAnimId = null;
 let showCycleHeatmap = false;
@@ -107,9 +274,6 @@ function updateCycleProgressLabel() {
   }
 }
 
-/**
- * GÁN SỌC VẰN TRỰC TIẾP LÊN ĐÚNG THÂN CHÚ NGỰA GỐC
- */
 function renderCycleFrame() {
   if (!cycleMainCtx || !cycleSourceImg.complete) return;
 
@@ -126,7 +290,7 @@ function renderCycleFrame() {
   const heatData = cycleHeatmapCtx ? cycleHeatmapCtx.createImageData(w, h) : null;
   const heat = heatData ? heatData.data : null;
 
-  const t = cycleProgress / 100.0; // 0.0 -> 1.0
+  const t = cycleProgress / 100.0;
 
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
@@ -137,7 +301,6 @@ function renderCycleFrame() {
       let isHorseBody = false;
 
       if (currentCycleMode === 'horse_zebra') {
-        // NHẬN DIỆN THÂN CHÚ NGỰA TRẮNG
         const lum = (r * 0.299 + g * 0.587 + b * 0.114);
         const maxC = Math.max(r, g, b);
         const minC = Math.min(r, g, b);
@@ -145,7 +308,6 @@ function renderCycleFrame() {
 
         if (lum > 110 && sat < 65 && y > h * 0.22 && y < h * 0.88 && x > w * 0.12 && x < w * 0.88) {
           isHorseBody = true;
-
           const angle = 0.72;
           const u = x * Math.cos(angle) + y * Math.sin(angle) + 12 * Math.sin(y * 0.04);
           const stripeWave = Math.sin(u * 0.24);
@@ -311,140 +473,7 @@ function handleCycleImageUpload(e) {
 }
 
 // =============================================================================
-// 2. STYLEGAN CHÂN THỰC 100%: LATENT WALK ĐƠN KHỐI (KHÔNG BỊ BÓNG MA GHOSTING)
-// =============================================================================
-const LatentWalkFrames = [];
-const LatentWalkPaths = [
-  "assets/latent_walk/frame_0.jpg",
-  "assets/latent_walk/frame_1.jpg",
-  "assets/latent_walk/frame_2.jpg",
-  "assets/latent_walk/frame_3.jpg",
-  "assets/latent_walk/frame_4.jpg",
-  "assets/latent_walk/frame_5.jpg",
-  "assets/latent_walk/frame_6.jpg",
-  "assets/latent_walk/frame_7.jpg"
-];
-
-const StyleAttributes = {
-  smile: { img: new Image(), src: "assets/latent_walk/smile_young.jpg" },
-  neutral: { img: new Image(), src: "assets/latent_walk/neutral_young.jpg" },
-  elder: { img: new Image(), src: "assets/latent_walk/elder_walk.jpg" },
-  glasses: { img: new Image(), src: "assets/latent_walk/glasses_walk.jpg" }
-};
-
-function initStyleGANStudio() {
-  // Preload frames
-  for (let i = 0; i < LatentWalkPaths.length; i++) {
-    const img = new Image();
-    img.src = LatentWalkPaths[i];
-    LatentWalkFrames.push(img);
-  }
-  for (const k in StyleAttributes) {
-    StyleAttributes[k].img.src = StyleAttributes[k].src;
-  }
-
-  const smileSlider = document.getElementById('slider-smile');
-  const ageSlider = document.getElementById('slider-age');
-  const genderSlider = document.getElementById('slider-gender');
-  const glassesSlider = document.getElementById('slider-glasses');
-  const morphSlider = document.getElementById('slider-morph');
-
-  const updateRealFace = () => {
-    const smile = smileSlider ? parseFloat(smileSlider.value) : 0;
-    const age = ageSlider ? parseFloat(ageSlider.value) : 25;
-    const gender = genderSlider ? parseFloat(genderSlider.value) : 0;
-    const glasses = glassesSlider ? parseFloat(glassesSlider.value) : 0;
-    const morph = morphSlider ? parseFloat(morphSlider.value) : 0;
-
-    const valSmile = document.getElementById('val-smile');
-    const valAge = document.getElementById('val-age');
-    const valGender = document.getElementById('val-gender');
-    const valGlasses = document.getElementById('val-glasses');
-    const valMorph = document.getElementById('val-morph');
-
-    if (valSmile) valSmile.innerText = smile > 0 ? `+${smile.toFixed(1)} (Cười rạng rỡ)` : (smile < 0 ? `${smile.toFixed(1)} (Nghiêm nghị)` : `0.0 (Bình thường)`);
-    if (valAge) valAge.innerText = `${Math.round(age)} tuổi`;
-    if (valGender) valGender.innerText = gender > 50 ? `${gender}% (Chân dung Nữ)` : `${100 - gender}% (Chân dung Nam)`;
-    if (valGlasses) valGlasses.innerText = glasses > 40 ? 'Đeo kính thời trang' : 'Không đeo kính';
-    if (valMorph) valMorph.innerText = `Khung hình nơ-ron: ${Math.round((morph / 100) * 7) + 1}/8`;
-
-    renderSolidFaceCanvas(smile, age, gender, glasses, morph);
-  };
-
-  if (smileSlider) smileSlider.addEventListener('input', updateRealFace);
-  if (ageSlider) ageSlider.addEventListener('input', updateRealFace);
-  if (genderSlider) genderSlider.addEventListener('input', updateRealFace);
-  if (glassesSlider) glassesSlider.addEventListener('input', updateRealFace);
-  if (morphSlider) morphSlider.addEventListener('input', updateRealFace);
-
-  setTimeout(updateRealFace, 300);
-}
-
-/**
- * KẾT XUẤT ẢNH ĐƠN KHỐI SẮC NÉT (LOẠI BỎ 100% GHOSTING / BÓNG MA CHỒNG LẤN)
- */
-function renderSolidFaceCanvas(smile, age, gender, glasses, morph) {
-  const canvas = document.getElementById('stylegan-face-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width;
-  const h = canvas.height;
-  ctx.clearRect(0, 0, w, h);
-
-  let targetImg = null;
-
-  if (age > 50 && StyleAttributes.elder.img.complete) {
-    targetImg = StyleAttributes.elder.img;
-  } else if (glasses > 50 && StyleAttributes.glasses.img.complete) {
-    targetImg = StyleAttributes.glasses.img;
-  } else if (smile > 0.4 && StyleAttributes.smile.img.complete) {
-    targetImg = StyleAttributes.smile.img;
-  } else if (smile < -0.3 && StyleAttributes.neutral.img.complete) {
-    targetImg = StyleAttributes.neutral.img;
-  } else {
-    const frameIndex = Math.min(LatentWalkFrames.length - 1, Math.floor((morph / 100.0) * LatentWalkFrames.length));
-    targetImg = LatentWalkFrames[frameIndex];
-  }
-
-  if (targetImg && targetImg.complete) {
-    ctx.globalAlpha = 1.0;
-    ctx.drawImage(targetImg, 0, 0, w, h);
-  }
-
-  const formulaEl = document.getElementById('latent-vector-formula');
-  if (formulaEl) {
-    const smileSign = smile >= 0 ? `+ ${(smile).toFixed(1)}` : `- ${Math.abs(smile).toFixed(1)}`;
-    formulaEl.innerHTML = `$$\\mathbf{w}_{out} = \\mathbf{w}_{FFHQ} ${smileSign}\\cdot\\vec{v}_{cười} + \\left(\\frac{${Math.round(age)}-25}{50}\\right)\\cdot\\vec{v}_{tuổi} + ${(glasses/100).toFixed(2)}\\cdot\\vec{v}_{kính} + ${(gender/100).toFixed(2)}\\cdot\\vec{v}_{nữ}$$`;
-    if (window.renderMathInElement) window.renderMathInElement(formulaEl);
-  }
-
-  const fmap1 = document.getElementById('fmap-dcgan-l1');
-  const fmap2 = document.getElementById('fmap-dcgan-l2');
-  const fmap3 = document.getElementById('fmap-dcgan-l3');
-  if (window.HighFidelityEngine) {
-    window.HighFidelityEngine.renderDCGANMicroscope(canvas, fmap1, fmap2, fmap3);
-  }
-}
-
-function randomizeFaceSeed() {
-  const smileSlider = document.getElementById('slider-smile');
-  const ageSlider = document.getElementById('slider-age');
-  const genderSlider = document.getElementById('slider-gender');
-  const glassesSlider = document.getElementById('slider-glasses');
-  const morphSlider = document.getElementById('slider-morph');
-
-  if (smileSlider) smileSlider.value = ((Math.random() - 0.3) * 1.5).toFixed(1);
-  if (ageSlider) ageSlider.value = Math.floor(18 + Math.random() * 55);
-  if (genderSlider) genderSlider.value = Math.floor(Math.random() * 100);
-  if (glassesSlider) glassesSlider.value = Math.random() > 0.6 ? 80 : 0;
-  if (morphSlider) morphSlider.value = Math.floor(Math.random() * 100);
-
-  const event = new Event('input');
-  if (smileSlider) smileSlider.dispatchEvent(event);
-}
-
-// =============================================================================
-// 3. PIX2PIX NEURAL SKETCH-TO-ART (U-NET)
+// 3. PIX2PIX NEURAL SKETCHPAD (U-NET)
 // =============================================================================
 let sketchCanvas, sketchCtx, resultCanvas, resultCtx;
 let isDrawing = false;

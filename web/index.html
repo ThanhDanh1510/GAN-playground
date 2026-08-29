@@ -51,7 +51,7 @@
           🦓 1. CycleGAN (Tiến Trình)
         </button>
         <button onclick="switchTab('stylegan')" id="tab-btn-stylegan" class="tab-btn px-3.5 py-1.5 rounded-xl text-xs font-medium text-slate-300 hover:text-white transition">
-          👤 2. StyleGAN (Mặt Người Thật)
+          👤 2. StyleGAN (e4e Face Inversion)
         </button>
         <button onclick="switchTab('pix2pix')" id="tab-btn-pix2pix" class="tab-btn px-3.5 py-1.5 rounded-xl text-xs font-medium text-slate-300 hover:text-white transition">
           🎨 3. Pix2Pix (U-Net 3D Art)
@@ -97,8 +97,6 @@
 
       <!-- Màn hình Trực Quan Hóa Lớn & Thanh Trượt Tiến Trình -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        <!-- Màn hình kết xuất Canvas chính -->
         <div class="lg:col-span-8 glass-card p-6 rounded-3xl space-y-4 flex flex-col items-center">
           <div class="w-full flex items-center justify-between">
             <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider">Màn Hình AI Biến Đổi Thời Gian Thực</span>
@@ -120,7 +118,6 @@
           </div>
         </div>
 
-        <!-- Bảng điều khiển tiến trình -->
         <div class="lg:col-span-4 glass-card p-6 rounded-3xl space-y-6 flex flex-col justify-between">
           <div class="space-y-4">
             <h3 class="text-sm font-bold text-cyan-400 uppercase tracking-wider">Tiến Trình Biến Đổi ($0\% \to 100\%$)</h3>
@@ -161,109 +158,135 @@
     </section>
 
     <!-- ==================================================== -->
-    <!-- TAB 2: STYLEGAN REALISTIC HUMAN FACE STUDIO -->
+    <!-- TAB 2: STYLEGAN e4e REAL FACE INVERSION & EDITING -->
     <!-- ==================================================== -->
     <section id="tab-stylegan" class="tab-content hidden space-y-6">
       <div class="bg-gradient-to-r from-violet-950/60 via-slate-900 to-fuchsia-950/40 p-6 rounded-3xl border border-violet-500/20 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
         <div class="space-y-2">
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-400 text-xs font-semibold">
-            <span>👤 ỨNG DỤNG SỐ 2</span> • <span>FFHQ LATENT WALK (SOLID FRAMES)</span>
+            <span>👤 ỨNG DỤNG SỐ 2</span> • <span>e4e STYLEGAN IMAGE INVERSION (SIGGRAPH 2021 - arXiv:2102.02766)</span>
           </div>
-          <h2 class="text-2xl font-bold text-white">StyleGAN: Studio Chân Dung Mặt Người Thật</h2>
+          <h2 class="text-2xl font-bold text-white">StyleGAN: Nghịch Đảo Ảnh Người Thật (e4e Inversion & Latent Editing)</h2>
           <p class="text-slate-300 text-sm max-w-2xl leading-relaxed">
-            Khám phá không gian tiềm ẩn $\mathcal{W}$ chuẩn NVIDIA StyleGAN2: Chỉnh sửa nụ cười, tuổi tác, giới tính, kính mắt với các khung hình nơ-ron đơn khối sắc nét $100\%$!
+            Dựa trên công trình nghiên cứu <strong>"Designing an Encoder for StyleGAN Image Inversion" (e4e)</strong>: Nạp ảnh chụp một người bất kỳ $\mathbf{x} \to$ mã hóa vào không gian tiềm ẩn $\mathbf{w}^+ \in \mathcal{W}^{18 \times 512} \to$ chỉnh sửa thành <strong>Trẻ Hóa (Young)</strong> hoặc <strong>Lão Hóa (Old)</strong> chân thực!
           </p>
         </div>
 
-        <button onclick="randomizeFaceSeed()" class="px-4 py-2.5 bg-gradient-to-r from-violet-500 to-fuchsia-600 hover:from-violet-400 hover:to-fuchsia-500 text-white font-bold text-xs rounded-xl transition shadow-md shadow-violet-500/20 flex items-center gap-2 shrink-0">
-          <span>🎲 Chọn Người Ngẫu Nhiên Mới</span>
-        </button>
+        <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <select id="e4e-preset-select" class="bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-violet-500 outline-none">
+            <option value="messi">⚽ Lionel Messi (Ví dụ chuẩn Paper)</option>
+            <option value="taylor">🎤 Taylor (Nghệ sĩ Nữ)</option>
+            <option value="elon">🚀 Elon (Doanh nhân Nam)</option>
+          </select>
+
+          <label class="cursor-pointer px-4 py-2.5 bg-gradient-to-r from-violet-500 to-fuchsia-600 hover:from-violet-400 hover:to-fuchsia-500 text-white font-bold text-xs rounded-xl transition shadow-md shadow-violet-500/20 flex items-center gap-2">
+            <span>📁 Tải Ảnh Người Của Bạn</span>
+            <input type="file" accept="image/*" class="hidden" onchange="handleCustomFaceUpload(event)">
+          </label>
+        </div>
       </div>
 
+      <!-- BẢNG 4 KHUNG SO SÁNH CHUẨN PAPER: Source ➔ Inversion ➔ Young ➔ Old -->
+      <div class="glass-card p-6 rounded-3xl space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-lg">🔬</span>
+            <h3 class="text-sm font-bold text-violet-400 uppercase tracking-wider">Chu Trình e4e Image Inversion & Semantic Editing (Theo Bài Báo arXiv:2102.02766)</h3>
+          </div>
+          <span class="text-xs text-slate-400 font-mono">e4e Encoder: $\mathbf{x} \to \mathbf{w}^+ \to G(\mathbf{w}^+ \pm \vec{v})$</span>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          <!-- 1. Source -->
+          <div class="bg-slate-900/80 p-3 rounded-2xl border border-slate-800 space-y-2">
+            <span class="text-xs font-bold text-slate-300">1. Ảnh Gốc (Source $\mathbf{x}$)</span>
+            <div class="aspect-square bg-slate-950 rounded-xl overflow-hidden border border-slate-700">
+              <img id="e4e-img-source" src="assets/e4e_faces/messi/source.jpg" class="w-full h-full object-cover">
+            </div>
+            <p class="text-[10px] text-slate-400">Ảnh chụp người thật ban đầu</p>
+          </div>
+
+          <!-- 2. e4e Inversion -->
+          <div class="bg-slate-900/80 p-3 rounded-2xl border border-violet-500/40 space-y-2">
+            <span class="text-xs font-bold text-violet-300">2. Nghịch Đảo (Inversion $\mathbf{w}^+$)</span>
+            <div class="aspect-square bg-slate-950 rounded-xl overflow-hidden border border-violet-500/50">
+              <img id="e4e-img-inversion" src="assets/e4e_faces/messi/inversion.jpg" class="w-full h-full object-cover">
+            </div>
+            <p class="text-[10px] text-slate-400">e4e mã hóa thành vector $\mathbf{w}^+$</p>
+          </div>
+
+          <!-- 3. Young Edit -->
+          <div class="bg-slate-900/80 p-3 rounded-2xl border border-cyan-500/40 space-y-2">
+            <span class="text-xs font-bold text-cyan-300">3. Trẻ Hóa (Young: $\mathbf{w}^+ - \vec{v}_{age}$)</span>
+            <div class="aspect-square bg-slate-950 rounded-xl overflow-hidden border border-cyan-500/50">
+              <img id="e4e-img-young" src="assets/e4e_faces/messi/young.jpg" class="w-full h-full object-cover">
+            </div>
+            <p class="text-[10px] text-slate-400">Gương mặt khi còn là cậu bé</p>
+          </div>
+
+          <!-- 4. Old Edit -->
+          <div class="bg-slate-900/80 p-3 rounded-2xl border border-amber-500/40 space-y-2">
+            <span class="text-xs font-bold text-amber-300">4. Lão Hóa (Old: $\mathbf{w}^+ + \vec{v}_{age}$)</span>
+            <div class="aspect-square bg-slate-950 rounded-xl overflow-hidden border border-amber-500/50">
+              <img id="e4e-img-old" src="assets/e4e_faces/messi/old.jpg" class="w-full h-full object-cover">
+            </div>
+            <p class="text-[10px] text-slate-400">Gương mặt khi về già (tóc bạc/kính)</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- BẢNG ĐIỀU KHIỂN TƯƠNG TÁC LATENT EDITING THỜI GIAN THỰC -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        <!-- Bảng Sliders Thuộc Tính Chuẩn CelebA -->
-        <div class="lg:col-span-5 glass-card p-6 rounded-3xl space-y-4">
-          <h3 class="text-sm font-bold text-violet-400 uppercase tracking-wider">Bảng Điều Khiển Thuộc Tính Vector $\mathbf{w}$</h3>
+        <div class="lg:col-span-5 glass-card p-6 rounded-3xl space-y-5">
+          <h3 class="text-sm font-bold text-violet-400 uppercase tracking-wider">Điều Khiển Vector Tiềm Ẩn $\mathbf{w}^+$</h3>
 
-          <!-- 1. Nụ cười -->
-          <div class="space-y-1">
+          <!-- Slider 1: Tuổi tác (Young <-> Old) -->
+          <div class="space-y-1.5">
             <div class="flex justify-between text-xs font-medium">
-              <span class="text-slate-300">😄 Cảm Xúc (Nụ Cười):</span>
-              <span class="text-cyan-400 font-mono text-[11px]" id="val-smile">0.0 (Bình thường)</span>
+              <span class="text-slate-300">👶 Biến Đổi Tuổi Tác (Age Vector):</span>
+              <span class="text-amber-400 font-mono text-[11px]" id="val-e4e-age">0.0 (Tuổi gốc)</span>
             </div>
-            <input type="range" id="slider-smile" min="-1" max="1" step="0.1" value="0" class="w-full accent-cyan-400 cursor-pointer">
+            <input type="range" id="slider-e4e-age" min="-1" max="1" step="0.1" value="0" class="w-full accent-amber-400 cursor-pointer">
+            <div class="flex justify-between text-[10px] text-slate-500">
+              <span>Trẻ em (-1.0)</span>
+              <span>Gốc (0.0)</span>
+              <span>Về già (+1.0)</span>
+            </div>
           </div>
 
-          <!-- 2. Tuổi tác -->
-          <div class="space-y-1">
+          <!-- Slider 2: Nụ cười -->
+          <div class="space-y-1.5">
             <div class="flex justify-between text-xs font-medium">
-              <span class="text-slate-300">👴 Tuổi Tác (Age):</span>
-              <span class="text-amber-400 font-mono text-[11px]" id="val-age">25 tuổi</span>
+              <span class="text-slate-300">😄 Cảm Xúc (Smile Vector):</span>
+              <span class="text-cyan-400 font-mono text-[11px]" id="val-e4e-smile">0.0 (Bình thường)</span>
             </div>
-            <input type="range" id="slider-age" min="18" max="75" step="1" value="25" class="w-full accent-amber-400 cursor-pointer">
+            <input type="range" id="slider-e4e-smile" min="0" max="1" step="0.1" value="0" class="w-full accent-cyan-400 cursor-pointer">
           </div>
 
-          <!-- 3. Giới tính / Nét mặt -->
-          <div class="space-y-1">
+          <!-- Slider 3: Kính mắt -->
+          <div class="space-y-1.5">
             <div class="flex justify-between text-xs font-medium">
-              <span class="text-slate-300">👩 Giới Tính / Nét Mặt:</span>
-              <span class="text-pink-400 font-mono text-[11px]" id="val-gender">Nam tính</span>
+              <span class="text-slate-300">🕶️ Kính Mắt (Eyeglasses Vector):</span>
+              <span class="text-emerald-400 font-mono text-[11px]" id="val-e4e-glasses">Không kính</span>
             </div>
-            <input type="range" id="slider-gender" min="0" max="100" step="1" value="0" class="w-full accent-pink-400 cursor-pointer">
-          </div>
-
-          <!-- 4. Kính mắt -->
-          <div class="space-y-1">
-            <div class="flex justify-between text-xs font-medium">
-              <span class="text-slate-300">🕶️ Kính Mắt (Eyeglasses):</span>
-              <span class="text-emerald-400 font-mono text-[11px]" id="val-glasses">Không đeo kính</span>
-            </div>
-            <input type="range" id="slider-glasses" min="0" max="100" step="1" value="0" class="w-full accent-emerald-400 cursor-pointer">
-          </div>
-
-          <!-- 5. Morphing -->
-          <div class="space-y-1 pt-2 border-t border-slate-800">
-            <div class="flex justify-between text-xs font-medium">
-              <span class="text-slate-300">🔄 Duyệt Quỹ Đạo Latent Walk (Morphing):</span>
-              <span class="text-fuchsia-400 font-mono text-[11px]" id="val-morph">Khung hình nơ-ron: 1/8</span>
-            </div>
-            <input type="range" id="slider-morph" min="0" max="100" step="1" value="0" class="w-full accent-fuchsia-400 cursor-pointer">
+            <input type="range" id="slider-e4e-glasses" min="0" max="1" step="0.1" value="0" class="w-full accent-emerald-400 cursor-pointer">
           </div>
         </div>
 
-        <!-- Màn hình Chân Dung Người Thật & Kính Hiển Vi -->
+        <!-- Màn hình kết xuất chỉnh sửa -->
         <div class="lg:col-span-7 glass-card p-6 rounded-3xl flex flex-col items-center justify-between space-y-4">
           <div class="w-full flex items-center justify-between">
-            <span class="text-xs font-bold text-violet-400 uppercase tracking-wider">Chân Dung Người Thật (StyleGAN Generator Output)</span>
-            <span class="px-2.5 py-0.5 text-xs rounded-full bg-violet-950 text-violet-300 border border-violet-800 font-mono">100% Solid Frame</span>
+            <span class="text-xs font-bold text-violet-400 uppercase tracking-wider">Màn Hình Kết Xuất Latent Space $G(\mathbf{w}^+_{edit})$</span>
+            <span class="px-2.5 py-0.5 text-xs rounded-full bg-violet-950 text-violet-300 border border-violet-800 font-mono">e4e Extended Space</span>
           </div>
 
           <div class="w-64 h-64 bg-slate-900 rounded-3xl border-2 border-violet-500/30 overflow-hidden shadow-2xl flex items-center justify-center p-1">
-            <canvas id="stylegan-face-canvas" width="400" height="400" class="w-full h-full rounded-2xl object-cover"></canvas>
-          </div>
-
-          <div class="w-full bg-slate-900/80 p-3 rounded-2xl border border-slate-800 space-y-2">
-            <span class="text-[11px] font-bold text-slate-300">🔬 Kính hiển vi: Kích hoạt các tầng Transposed Convolutions:</span>
-            <div class="grid grid-cols-3 gap-2 text-center">
-              <div>
-                <canvas id="fmap-dcgan-l1" width="48" height="48" class="mx-auto rounded bg-black"></canvas>
-                <span class="text-[9px] text-slate-400">Tầng 1 (Hình khối)</span>
-              </div>
-              <div>
-                <canvas id="fmap-dcgan-l2" width="48" height="48" class="mx-auto rounded bg-black"></canvas>
-                <span class="text-[9px] text-slate-400">Tầng 2 (Mắt mũi)</span>
-              </div>
-              <div>
-                <canvas id="fmap-dcgan-l3" width="48" height="48" class="mx-auto rounded bg-black"></canvas>
-                <span class="text-[9px] text-slate-400">Tầng 3 (Chi tiết)</span>
-              </div>
-            </div>
+            <canvas id="e4e-interactive-canvas" width="400" height="400" class="w-full h-full rounded-2xl object-cover"></canvas>
           </div>
 
           <div class="w-full bg-slate-900/80 p-3 rounded-2xl border border-slate-800 text-center">
-            <div id="latent-vector-formula" class="text-xs text-cyan-300 font-mono overflow-x-auto py-1">
-              $$\mathbf{w}_{out} = \mathbf{w}_{FFHQ} + 0.0\cdot\vec{v}_{cười} + 0.0\cdot\vec{v}_{tuổi} + 0.0\cdot\vec{v}_{kính}$$
+            <div id="e4e-formula" class="text-xs text-cyan-300 font-mono overflow-x-auto py-1">
+              $$\mathbf{w}^+_{edit} = \text{e4e}(\mathbf{x}) + 0.0\cdot\vec{v}_{age} + 0.0\cdot\vec{v}_{smile} + 0.0\cdot\vec{v}_{glasses} \in \mathcal{W}^{18\times 512}$$
             </div>
           </div>
         </div>
@@ -440,7 +463,7 @@
 
   <!-- FOOTER -->
   <footer class="border-t border-slate-800/80 mt-12 py-6 text-center text-xs text-slate-500 space-y-1">
-    <p>GAN Playground • Dành cho Học sinh & Sinh viên khám phá Trí tuệ Nhân tạo Tạo sinh</p>
+    <p>GAN Playground • Ứng dụng e4e StyleGAN Image Inversion (SIGGRAPH 2021 - arXiv:2102.02766)</p>
     <p>Chạy trực tiếp 100% trong trình duyệt • Tăng tốc phần cứng WebGL GPU</p>
   </footer>
 
