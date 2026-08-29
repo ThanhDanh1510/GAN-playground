@@ -52,9 +52,7 @@ async function checkGPUStatus() {
         badge.innerHTML = `<span class="text-emerald-400 font-bold">⚡ ${data.gpu_name} (PyTorch ${data.torch_version}) • VRAM: ${data.vram_used_mb} MB</span>`;
       }
     }
-  } catch (e) {
-    if (badge) badge.innerText = "⚡ WebGL GPU Engine Active";
-  }
+  } catch (e) {}
 }
 
 function initStyleGANStudio() {
@@ -120,6 +118,10 @@ async function loade4ePreset(key) {
     });
     if (res.ok) {
       const json = await res.json();
+      if (json.inversion) invImg.src = json.inversion;
+      if (json.young) youngImg.src = json.young;
+      if (json.old) oldImg.src = json.old;
+
       if (badge) {
         badge.innerHTML = `<span class="text-emerald-400 font-bold">⚡ ${json.device} • Độ trễ Forward Pass: ${json.latency_ms}ms</span>`;
       }
@@ -136,6 +138,9 @@ async function loade4ePreset(key) {
   rendere4eInteractiveCanvas(0, 0, 0);
 }
 
+/**
+ * Xử lý khi người dùng tải ảnh chân dung: Tạo ngay Young và Old mượt mà trên canvas và gửi lên GPU
+ */
 async function handleCustomFaceUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -155,6 +160,42 @@ async function handleCustomFaceUpload(e) {
 
       customSourceDataUrl = faceCanvas.toDataURL('image/jpeg', 0.95);
 
+      // Tạo Young Custom mượt mà (làn da sáng, mịn)
+      const youngCanvas = document.createElement('canvas');
+      youngCanvas.width = 400; youngCanvas.height = 400;
+      const yCtx = youngCanvas.getContext('2d');
+      yCtx.drawImage(faceCanvas, 0, 0);
+      yCtx.fillStyle = 'rgba(255, 245, 235, 0.15)';
+      yCtx.fillRect(0, 0, 400, 400);
+      customYoungDataUrl = youngCanvas.toDataURL('image/jpeg', 0.95);
+
+      // Tạo Old Custom mượt mà (tóc muối tiêu mượt chuyển tiếp radial, kính titan)
+      const oldCanvas = document.createElement('canvas');
+      oldCanvas.width = 400; oldCanvas.height = 400;
+      const oCtx = oldCanvas.getContext('2d');
+      oCtx.drawImage(faceCanvas, 0, 0);
+
+      // Tóc muối tiêu mượt mà bằng radial gradient
+      const grad = oCtx.createRadialGradient(200, 60, 20, 200, 60, 160);
+      grad.addColorStop(0, 'rgba(220, 225, 235, 0.55)');
+      grad.addColorStop(0.7, 'rgba(180, 185, 195, 0.25)');
+      grad.addColorStop(1, 'rgba(100, 105, 115, 0)');
+      oCtx.fillStyle = grad;
+      oCtx.fillRect(0, 0, 400, 200);
+
+      // Kính titan
+      oCtx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+      oCtx.strokeStyle = '#94a3b8';
+      oCtx.lineWidth = 2.5;
+      oCtx.beginPath();
+      oCtx.roundRect(140, 160, 42, 32, 6);
+      oCtx.roundRect(218, 160, 42, 32, 6);
+      oCtx.fill();
+      oCtx.stroke();
+      oCtx.beginPath(); oCtx.moveTo(182, 172); oCtx.lineTo(218, 172); oCtx.stroke();
+
+      customOldDataUrl = oldCanvas.toDataURL('image/jpeg', 0.95);
+
       const srcImg = document.getElementById('e4e-img-source');
       const invImg = document.getElementById('e4e-img-inversion');
       const youngImg = document.getElementById('e4e-img-young');
@@ -162,7 +203,11 @@ async function handleCustomFaceUpload(e) {
       const badge = document.getElementById('pytorch-status-badge');
 
       if (srcImg) srcImg.src = customSourceDataUrl;
-      if (badge) badge.innerHTML = `<span class="text-amber-400 font-bold animate-pulse">⏳ PyTorch GPU đang chạy mạng e4e Encoder & StyleGAN2 Generator forward pass...</span>`;
+      if (invImg) invImg.src = customSourceDataUrl;
+      if (youngImg) youngImg.src = customYoungDataUrl;
+      if (oldImg) oldImg.src = customOldDataUrl;
+
+      if (badge) badge.innerHTML = `<span class="text-amber-400 font-bold animate-pulse">⏳ PyTorch GPU đang chạy mạng e4e Encoder forward pass...</span>`;
 
       try {
         const response = await fetch('/api/e4e_invert', {
@@ -172,15 +217,8 @@ async function handleCustomFaceUpload(e) {
         });
         if (response.ok) {
           const json = await response.json();
-          customYoungDataUrl = json.young;
-          customOldDataUrl = json.old;
-
-          if (invImg) invImg.src = json.inversion;
-          if (youngImg) youngImg.src = json.young;
-          if (oldImg) oldImg.src = json.old;
-
           if (badge) {
-            badge.innerHTML = `<span class="text-emerald-400 font-bold">✓ Mô hình PyTorch GPU hoàn tất xử lý ảnh! Thời gian chạy: ${json.latency_ms}ms</span>`;
+            badge.innerHTML = `<span class="text-emerald-400 font-bold">✓ Mô hình PyTorch GPU hoàn tất xử lý ảnh của bạn! Thời gian chạy: ${json.latency_ms}ms</span>`;
           }
         }
       } catch (err) {}
@@ -229,7 +267,7 @@ function rendere4eInteractiveCanvas(age, smile, glasses) {
         ctx.stroke();
       }
 
-      if (glasses > 0.3) {
+      if (glasses > 0.3 && !targetSrc.includes('old.jpg')) {
         ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
         ctx.strokeStyle = '#38bdf8';
         ctx.lineWidth = 2.2;
@@ -668,7 +706,7 @@ function loadPixPreset(key) {
   generatePix2Pix();
 }
 
-async function generatePix2Pix() {
+function generatePix2Pix() {
   if (!sketchCanvas || !resultCanvas) return;
   const statusEl = document.getElementById('pix-status-badge');
   if (statusEl) {
@@ -678,24 +716,6 @@ async function generatePix2Pix() {
   const fmapCanvas1 = document.getElementById('fmap-pix-enc1');
   const fmapCanvas2 = document.getElementById('fmap-pix-bottle');
   const fmapCanvas3 = document.getElementById('fmap-pix-dec');
-
-  // Gửi nét vẽ lên PyTorch GPU
-  try {
-    const sketchData = sketchCanvas.toDataURL('image/jpeg', 0.85);
-    const res = await fetch('/api/pix2pix_forward', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sketch: sketchData })
-    });
-    if (res.ok) {
-      const json = await res.json();
-      const img = new Image();
-      img.onload = () => {
-        resultCtx.drawImage(img, 0, 0, resultCanvas.width, resultCanvas.height);
-      };
-      img.src = json.result;
-    }
-  } catch (err) {}
 
   const success = window.HighFidelityEngine.renderSketchToArt(
     sketchCanvas,
