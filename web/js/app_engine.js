@@ -7,6 +7,13 @@
 // 1. STYLEGAN e4e REAL FACE INVERSION & EDITING STUDIO
 // =============================================================================
 const e4eDatasets = {
+  ronaldo: {
+    name: "Cristiano Ronaldo (Bồ Đào Nha)",
+    source: "assets/e4e_faces/ronaldo/source.jpg",
+    inversion: "assets/e4e_faces/ronaldo/inversion.jpg",
+    young: "assets/e4e_faces/ronaldo/young.jpg",
+    old: "assets/e4e_faces/ronaldo/old.jpg"
+  },
   messi: {
     name: "Lionel Messi (Ví dụ chuẩn Paper e4e)",
     source: "assets/e4e_faces/messi/source.jpg",
@@ -30,7 +37,7 @@ const e4eDatasets = {
   }
 };
 
-let currente4eKey = 'messi';
+let currente4eKey = 'ronaldo';
 let customSourceDataUrl = null;
 let customYoungDataUrl = null;
 let customOldDataUrl = null;
@@ -69,7 +76,7 @@ function initStyleGANStudio() {
   if (smileSlider) smileSlider.addEventListener('input', updateDynamicEdit);
   if (glassesSlider) glassesSlider.addEventListener('input', updateDynamicEdit);
 
-  loade4ePreset('messi');
+  loade4ePreset('ronaldo');
 }
 
 function loade4ePreset(key) {
@@ -109,63 +116,55 @@ function handleCustomFaceUpload(e) {
   reader.onload = (event) => {
     const rawImg = new Image();
     rawImg.onload = () => {
-      // 1. Lưu ảnh gốc
-      customSourceDataUrl = event.target.result;
+      // 1. Tự động crop khuôn mặt ở trung tâm tỷ lệ 1:1
+      const faceCanvas = document.createElement('canvas');
+      const side = Math.min(rawImg.width, rawImg.height);
+      faceCanvas.width = 400;
+      faceCanvas.height = 400;
+      const fCtx = faceCanvas.getContext('2d');
+      const sx = (rawImg.width - side) / 2;
+      const sy = Math.max(0, (rawImg.height - side) * 0.2);
+      fCtx.drawImage(rawImg, sx, sy, side, side, 0, 0, 400, 400);
 
-      // 2. Tạo biến đổi TRẺ HÓA (Young) trực tiếp trên khuôn mặt này
+      customSourceDataUrl = faceCanvas.toDataURL('image/jpeg', 0.95);
+
+      // 2. Tạo biến đổi TRẺ HÓA (Young)
       const youngCanvas = document.createElement('canvas');
-      youngCanvas.width = rawImg.width;
-      youngCanvas.height = rawImg.height;
+      youngCanvas.width = 400; youngCanvas.height = 400;
       const yCtx = youngCanvas.getContext('2d');
-      yCtx.drawImage(rawImg, 0, 0);
-      
-      // Filter trẻ hóa: Làm mịn da, tăng sáng mắt, má hồng
-      const yImgData = yCtx.getImageData(0, 0, youngCanvas.width, youngCanvas.height);
+      yCtx.drawImage(faceCanvas, 0, 0);
+      const yImgData = yCtx.getImageData(0, 0, 400, 400);
       const yData = yImgData.data;
       for (let i = 0; i < yData.length; i += 4) {
-        // Tăng độ sáng và hồng hào tự nhiên
-        yData[i] = Math.min(255, Math.floor(yData[i] * 1.08 + 10));     // R
-        yData[i+1] = Math.min(255, Math.floor(yData[i+1] * 1.04 + 6));  // G
-        yData[i+2] = Math.min(255, Math.floor(yData[i+2] * 1.02));      // B
+        yData[i] = Math.min(255, Math.floor(yData[i] * 1.08 + 8));
+        yData[i+1] = Math.min(255, Math.floor(yData[i+1] * 1.05 + 5));
+        yData[i+2] = Math.min(255, Math.floor(yData[i+2] * 1.02));
       }
       yCtx.putImageData(yImgData, 0, 0);
-      customYoungDataUrl = youngCanvas.toDataURL();
+      customYoungDataUrl = youngCanvas.toDataURL('image/jpeg', 0.95);
 
-      // 3. Tạo biến đổi LÃO HÓA (Old) trực tiếp trên khuôn mặt này
+      // 3. Tạo biến đổi LÃO HÓA (Old)
       const oldCanvas = document.createElement('canvas');
-      oldCanvas.width = rawImg.width;
-      oldCanvas.height = rawImg.height;
+      oldCanvas.width = 400; oldCanvas.height = 400;
       const oCtx = oldCanvas.getContext('2d');
-      oCtx.drawImage(rawImg, 0, 0);
-
-      // Filter lão hóa: Tạo nếp nhăn trán và làm bạc tóc
-      const oImgData = oCtx.getImageData(0, 0, oldCanvas.width, oldCanvas.height);
+      oCtx.drawImage(faceCanvas, 0, 0);
+      const oImgData = oCtx.getImageData(0, 0, 400, 400);
       const oData = oImgData.data;
-      const ow = oldCanvas.width, oh = oldCanvas.height;
 
-      for (let y = 0; y < oh; y++) {
-        for (let x = 0; x < ow; x++) {
-          const idx = (y * ow + x) * 4;
-          // Tóc ở phần trên: Chuyển dần sang ánh bạc
-          if (y < oh * 0.35) {
+      for (let y = 0; y < 400; y++) {
+        for (let x = 0; x < 400; x++) {
+          const idx = (y * 400 + x) * 4;
+          // Tóc ánh bạc
+          if (y < 150 && (x < 140 || x > 260 || y < 110)) {
             const gray = (oData[idx] + oData[idx+1] + oData[idx+2]) / 3;
-            oData[idx] = Math.min(255, Math.floor(gray * 0.7 + 100));
-            oData[idx+1] = Math.min(255, Math.floor(gray * 0.7 + 100));
-            oData[idx+2] = Math.min(255, Math.floor(gray * 0.7 + 110));
-          }
-          // Nếp nhăn trán
-          if (y > oh * 0.25 && y < oh * 0.38) {
-            const wrinkle = Math.sin(y * 0.6) * Math.sin(x * 0.1);
-            if (wrinkle > 0.4) {
-              oData[idx] = Math.max(0, oData[idx] - 35);
-              oData[idx+1] = Math.max(0, oData[idx+1] - 35);
-              oData[idx+2] = Math.max(0, oData[idx+2] - 35);
-            }
+            oData[idx] = Math.min(255, Math.floor(gray * 0.6 + 110));
+            oData[idx+1] = Math.min(255, Math.floor(gray * 0.6 + 110));
+            oData[idx+2] = Math.min(255, Math.floor(gray * 0.6 + 115));
           }
         }
       }
       oCtx.putImageData(oImgData, 0, 0);
-      customOldDataUrl = oldCanvas.toDataURL();
+      customOldDataUrl = oldCanvas.toDataURL('image/jpeg', 0.95);
 
       // Cập nhật 4 khung hình
       const srcImg = document.getElementById('e4e-img-source');
@@ -215,7 +214,6 @@ function rendere4eInteractiveCanvas(age, smile, glasses) {
     img.onload = () => {
       ctx.drawImage(img, 0, 0, w, h);
 
-      // Thêm nụ cười thời gian thực
       if (smile > 0.2) {
         ctx.strokeStyle = '#be123c';
         ctx.lineWidth = 3.5;
@@ -226,7 +224,6 @@ function rendere4eInteractiveCanvas(age, smile, glasses) {
         ctx.stroke();
       }
 
-      // Thêm kính mắt thời gian thực
       if (glasses > 0.3) {
         ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
         ctx.strokeStyle = '#38bdf8';
@@ -242,7 +239,6 @@ function rendere4eInteractiveCanvas(age, smile, glasses) {
     img.src = targetSrc;
   }
 
-  // Cập nhật công thức toán học e4e
   const formulaEl = document.getElementById('e4e-formula');
   if (formulaEl) {
     const ageSign = age >= 0 ? `+ ${(age).toFixed(1)}` : `- ${Math.abs(age).toFixed(1)}`;
@@ -459,7 +455,6 @@ function renderCycleFrame() {
     cycleHeatmapCtx.putImageData(heatData, 0, 0);
   }
 
-  // Kính hiển vi Nơ-ron
   const fmapCanvas = document.getElementById('fmap-cycle-res');
   if (fmapCanvas) {
     const fCtx = fmapCanvas.getContext('2d');
