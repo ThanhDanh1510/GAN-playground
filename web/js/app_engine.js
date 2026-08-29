@@ -1,28 +1,25 @@
 /**
- * GAN Playground - App Engine (Dynamic Neural & Procedural Synthesis Engine)
- * Xử lý tương tác THỰC TẾ dựa trên nét vẽ của người dùng và xử lý điểm ảnh thời gian thực
+ * GAN Playground - App Engine 2.0 (True Neural Execution Integration)
+ * Kết nối giao diện với TensorFlow.js WebGL Engine thực tế
  */
 
 // =============================================================================
-// 1. PIX2PIX NEURAL SKETCH-TO-ART SYNTHESIZER (XỬ LÝ TRỰC TIẾP NÉT VẼ NGƯỜI DÙNG)
+// 1. PIX2PIX NEURAL SKETCH-TO-ART (CHẠY U-NET TENSORFLOW.JS THẬT)
 // =============================================================================
 let sketchCanvas, sketchCtx;
 let resultCanvas, resultCtx;
 let isDrawing = false;
 let brushColor = '#ffffff';
-let brushSize = 5;
-let currentPixStyle = 'vibrant'; // 'vibrant', 'cyberpunk', 'cartoon'
+let brushSize = 6;
 
 const PixPresets = {
   sneaker: {
     name: "Giày Thể Thao Sneaker",
-    desc: "Preset nét vẽ giày thể thao. Bạn có thể vẽ thêm chi tiết hoặc xóa đi để thử nghiệm!",
+    desc: "Mẫu nét vẽ giày. Bạn có thể tự do vẽ thêm bất kỳ chi tiết nào trên canvas!",
     draw: (ctx, w, h) => {
       ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 4;
+      ctx.lineWidth = 5;
       ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      // Thân giày
       ctx.beginPath();
       ctx.moveTo(w * 0.15, h * 0.7);
       ctx.quadraticCurveTo(w * 0.15, h * 0.5, w * 0.3, h * 0.5);
@@ -35,7 +32,7 @@ const PixPresets = {
       ctx.lineTo(w * 0.15, h * 0.75);
       ctx.closePath();
       ctx.stroke();
-      // Đế giày
+      // Đế
       ctx.beginPath();
       ctx.moveTo(w * 0.12, h * 0.75);
       ctx.lineTo(w * 0.92, h * 0.75);
@@ -43,63 +40,40 @@ const PixPresets = {
       ctx.lineTo(w * 0.2, h * 0.85);
       ctx.quadraticCurveTo(w * 0.12, h * 0.85, w * 0.12, h * 0.75);
       ctx.stroke();
-      // Logo móc
-      ctx.beginPath();
-      ctx.moveTo(w * 0.38, h * 0.63);
-      ctx.quadraticCurveTo(w * 0.5, h * 0.7, w * 0.65, h * 0.48);
-      ctx.stroke();
     }
   },
   cat: {
     name: "Mèo Hoạt Hình Cute",
-    desc: "Preset khuôn mặt mèo con. Bạn hãy vẽ thêm mắt, râu hoặc biểu cảm khác!",
+    desc: "Mẫu nét vẽ mặt mèo. Thử vẽ thêm mắt to, tai thỏ hoặc người que!",
     draw: (ctx, w, h) => {
       ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 4;
+      ctx.lineWidth = 5;
       ctx.lineCap = 'round';
-      // Đầu
       ctx.beginPath();
       ctx.ellipse(w * 0.5, h * 0.55, w * 0.25, h * 0.28, 0, 0, 2 * Math.PI);
       ctx.stroke();
-      // Tai trái & phải
       ctx.beginPath();
       ctx.moveTo(w * 0.32, h * 0.35); ctx.lineTo(w * 0.25, h * 0.15); ctx.lineTo(w * 0.42, h * 0.28);
       ctx.stroke();
       ctx.beginPath();
       ctx.moveTo(w * 0.68, h * 0.35); ctx.lineTo(w * 0.75, h * 0.15); ctx.lineTo(w * 0.58, h * 0.28);
       ctx.stroke();
-      // Mắt
       ctx.beginPath(); ctx.ellipse(w * 0.42, h * 0.5, 8, 12, 0, 0, 2 * Math.PI); ctx.stroke();
       ctx.beginPath(); ctx.ellipse(w * 0.58, h * 0.5, 8, 12, 0, 0, 2 * Math.PI); ctx.stroke();
-      // Mũi & miệng
-      ctx.beginPath(); ctx.arc(w * 0.5, h * 0.62, 5, 0, Math.PI); ctx.stroke();
-      // Râu
-      ctx.beginPath();
-      ctx.moveTo(w * 0.25, h * 0.55); ctx.lineTo(w * 0.35, h * 0.57);
-      ctx.moveTo(w * 0.25, h * 0.62); ctx.lineTo(w * 0.35, h * 0.62);
-      ctx.moveTo(w * 0.75, h * 0.55); ctx.lineTo(w * 0.65, h * 0.57);
-      ctx.moveTo(w * 0.75, h * 0.62); ctx.lineTo(w * 0.65, h * 0.62);
-      ctx.stroke();
     }
   },
   house: {
     name: "Ngôi Nhà Cổ Tích",
-    desc: "Preset ngôi nhà nhỏ. Hãy vẽ thêm ống khói, mặt trời hoặc cây cối bên cạnh!",
+    desc: "Mẫu ngôi nhà. Bạn có thể vẽ thêm ống khói, mây trời hoặc cây cối!",
     draw: (ctx, w, h) => {
       ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 4;
-      // Khung nhà
+      ctx.lineWidth = 5;
       ctx.strokeRect(w * 0.25, h * 0.45, w * 0.5, h * 0.45);
-      // Mái nhà
       ctx.beginPath();
       ctx.moveTo(w * 0.2, h * 0.45); ctx.lineTo(w * 0.5, h * 0.18); ctx.lineTo(w * 0.8, h * 0.45);
       ctx.closePath();
       ctx.stroke();
-      // Cửa chính
       ctx.strokeRect(w * 0.43, h * 0.62, w * 0.14, h * 0.28);
-      // Cửa sổ
-      ctx.strokeRect(w * 0.3, h * 0.52, w * 0.1, h * 0.12);
-      ctx.strokeRect(w * 0.6, h * 0.52, w * 0.1, h * 0.12);
     }
   }
 };
@@ -114,7 +88,7 @@ function initPix2Pix() {
 
   clearSketchPad();
 
-  // Mouse & Touch events
+  // Mouse & Touch
   const startDraw = (e) => {
     isDrawing = true;
     const pos = getCanvasPos(e);
@@ -163,8 +137,8 @@ function clearSketchPad() {
   resultCtx.fillRect(0, 0, resultCanvas.width, resultCanvas.height);
 }
 
-function loadPixPreset(presetKey) {
-  const data = PixPresets[presetKey];
+function loadPixPreset(key) {
+  const data = PixPresets[key];
   if (!data) return;
 
   const descEl = document.getElementById('pix-preset-desc');
@@ -176,138 +150,45 @@ function loadPixPreset(presetKey) {
 }
 
 /**
- * U-Net Procedural Neural Shader:
- * Đọc trực tiếp ma trận điểm ảnh người dùng vẽ từ sketchCanvas và tạo ảnh 3D/Color sống động
+ * Chạy Mạng Nơ-ron U-Net Thật qua TensorFlow.js WebGL Backend
  */
-function generatePix2Pix() {
-  if (!sketchCtx || !resultCtx) return;
+async function generatePix2Pix() {
+  if (!sketchCanvas || !resultCanvas) return;
   const statusEl = document.getElementById('pix-status-badge');
   if (statusEl) {
-    statusEl.innerHTML = `<span class="text-amber-400 font-medium animate-pulse">⚡ U-Net đang trích xuất bản đồ nét vẽ & PatchGAN đang chấm điểm...</span>`;
+    statusEl.innerHTML = `<span class="text-amber-400 font-medium animate-pulse">⚡ Đang chuyển ảnh thành Tensor & chạy forward pass qua U-Net (WebGL GPU)...</span>`;
   }
 
-  const w = sketchCanvas.width;
-  const h = sketchCanvas.height;
-  const sketchImgData = sketchCtx.getImageData(0, 0, w, h);
-  const src = sketchImgData.data;
+  // 1. Chạy qua U-Net Neural Engine thật
+  if (window.NeuralEngine && window.NeuralEngine.isReady) {
+    const { resultImage, encFeatures, bottleneckFeatures, decFeatures } = window.NeuralEngine.processSketchWithUNet(sketchCanvas);
+    
+    // Render kết quả Tensor ra Canvas chính
+    await tf.browser.toPixels(resultImage, resultCanvas);
 
-  // Tạo Distance Transform và Edge Field từ nét vẽ thực tế
-  const isStroke = new Uint8Array(w * h);
-  let strokeCount = 0;
-  for (let i = 0; i < src.length; i += 4) {
-    // Nếu pixel sáng (nét vẽ màu trắng do người dùng vẽ)
-    if (src[i] > 80 || src[i+1] > 80 || src[i+2] > 80) {
-      isStroke[i / 4] = 1;
-      strokeCount++;
-    }
-  }
+    // 2. Render Kính hiển vi Nơ-ron (Feature Maps)
+    const fmapCanvas1 = document.getElementById('fmap-pix-enc1');
+    const fmapCanvas2 = document.getElementById('fmap-pix-bottle');
+    const fmapCanvas3 = document.getElementById('fmap-pix-dec');
 
-  // Tạo ảnh kết quả mới
-  const outImgData = resultCtx.createImageData(w, h);
-  const out = outImgData.data;
+    if (fmapCanvas1) await window.NeuralEngine.renderFeatureMapSlice(encFeatures, 4, fmapCanvas1);
+    if (fmapCanvas2) await window.NeuralEngine.renderFeatureMapSlice(bottleneckFeatures, 12, fmapCanvas2);
+    if (fmapCanvas3) await window.NeuralEngine.renderFeatureMapSlice(decFeatures, 8, fmapCanvas3);
 
-  // Nếu canvas trống
-  if (strokeCount < 10) {
-    resultCtx.fillStyle = '#0f172a';
-    resultCtx.fillRect(0, 0, w, h);
-    resultCtx.fillStyle = '#64748b';
-    resultCtx.font = '14px sans-serif';
-    resultCtx.textAlign = 'center';
-    resultCtx.fillText('Hãy vẽ nét phác thảo bất kỳ trên bảng vẽ bên trái!', w/2, h/2);
+    // Dọn dẹp bộ nhớ GPU
+    resultImage.dispose();
+    encFeatures.dispose();
+    bottleneckFeatures.dispose();
+    decFeatures.dispose();
+
     if (statusEl) {
-      statusEl.innerHTML = `<span class="text-slate-400">Vui lòng vẽ nét trước khi bấm sinh ảnh.</span>`;
+      statusEl.innerHTML = `<span class="text-emerald-400 font-semibold">✓ U-Net Forward Pass thành công trên WebGL GPU! Tensor shape: [64, 64, 3] | Vui lòng xem Feature Maps bên dưới.</span>`;
     }
-    return;
-  }
-
-  // 1. Phân tích khoảng cách tới nét vẽ gần nhất (Distance Field) & Shading 3D
-  const distField = new Float32Array(w * h);
-  distField.fill(999);
-
-  // Approximate Euclidean Distance Transform
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const idx = y * w + x;
-      if (isStroke[idx]) distField[idx] = 0;
-      else {
-        let minDist = 999;
-        // Quét bán kính lân cận 18px
-        const r = 16;
-        const xMin = Math.max(0, x - r), xMax = Math.min(w - 1, x + r);
-        const yMin = Math.max(0, y - r), yMax = Math.min(h - 1, y + r);
-        for (let ny = yMin; ny <= yMax; ny += 2) {
-          for (let nx = xMin; nx <= xMax; nx += 2) {
-            if (isStroke[ny * w + nx]) {
-              const d = Math.sqrt((x - nx)*(x - nx) + (y - ny)*(y - ny));
-              if (d < minDist) minDist = d;
-            }
-          }
-        }
-        distField[idx] = minDist;
-      }
-    }
-  }
-
-  // 2. Render Gradient màu thông minh (Phủ bóng Volumetric Shading, Ambient Glow & Texture)
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const idx = y * w + x;
-      const pIdx = idx * 4;
-      const d = distField[idx];
-
-      if (d === 0) {
-        // Nét vẽ chính: Viền phát sáng tương phản cao
-        out[pIdx] = 250;     // R
-        out[pIdx + 1] = 250; // G
-        out[pIdx + 2] = 255; // B
-        out[pIdx + 3] = 255;
-      } else if (d < 14) {
-        // Vùng phủ bóng 3D sát nét vẽ (Volumetric Glow / Diffusion)
-        const factor = 1.0 - (d / 14.0);
-        
-        // Màu sắc dựa trên vị trí Y và X (Gradient nghệ thuật phong cách Cyan - Purple - Gold)
-        const hue = (x / w) * 0.6 + (y / h) * 0.4;
-        const rVal = Math.floor(14 + factor * (20 + 200 * hue));
-        const gVal = Math.floor(100 + factor * (120 * (1 - hue)));
-        const bVal = Math.floor(220 + factor * 35);
-
-        // Ánh sáng từ góc trên trái
-        const light = 0.8 + 0.4 * Math.sin((x + y) * 0.05);
-
-        out[pIdx] = Math.min(255, Math.floor(rVal * light));
-        out[pIdx + 1] = Math.min(255, Math.floor(gVal * light));
-        out[pIdx + 2] = Math.min(255, Math.floor(bVal * light));
-        out[pIdx + 3] = 255;
-      } else if (d < 28) {
-        // Ambient glow lan tỏa nhẹ
-        const factor = (1.0 - (d / 28.0)) * 0.4;
-        out[pIdx] = Math.floor(15 + factor * 80);
-        out[pIdx + 1] = Math.floor(23 + factor * 140);
-        out[pIdx + 2] = Math.floor(42 + factor * 200);
-        out[pIdx + 3] = 255;
-      } else {
-        // Nền tối công nghệ
-        out[pIdx] = 15;
-        out[pIdx + 1] = 23;
-        out[pIdx + 2] = 42;
-        out[pIdx + 3] = 255;
-      }
-    }
-  }
-
-  // Vẽ ảnh kết quả lên Canvas
-  resultCtx.putImageData(outImgData, 0, 0);
-
-  // Hiển thị trạng thái thành công
-  if (statusEl) {
-    const dScore = (94.2 + Math.random() * 4.5).toFixed(1);
-    const l1Loss = (0.021 + Math.random() * 0.015).toFixed(3);
-    statusEl.innerHTML = `<span class="text-emerald-400 font-semibold">✓ Sinh tranh thành công từ nét vẽ của bạn! L1 Loss: ${l1Loss} | Discriminator Score: ${dScore}% Real</span>`;
   }
 }
 
 // =============================================================================
-// 2. CYCLEGAN DYNAMIC WORLD TRANSFORMER (XỬ LÝ ĐIỂM ẢNH THỰC TẾ THỜI GIAN THỰC)
+// 2. CYCLEGAN DYNAMIC RESIDUAL TRANSFORMER
 // =============================================================================
 let cycleSrcCanvas, cycleSrcCtx;
 let cycleTransCanvas, cycleTransCtx;
@@ -341,19 +222,13 @@ function loadCyclePreset(mode) {
   const img = new Image();
   img.crossOrigin = "anonymous";
   img.onload = () => {
-    const w = cycleSrcCanvas.width;
-    const h = cycleSrcCanvas.height;
-    cycleSrcCtx.drawImage(img, 0, 0, w, h);
+    cycleSrcCtx.drawImage(img, 0, 0, cycleSrcCanvas.width, cycleSrcCanvas.height);
     runCycleGANInference();
   };
 
-  if (mode === 'horse_zebra') {
-    img.src = 'assets/horse1.svg';
-  } else if (mode === 'summer_winter') {
-    img.src = 'assets/summer1.svg';
-  } else {
-    img.src = 'assets/village.svg';
-  }
+  if (mode === 'horse_zebra') img.src = 'assets/horse1.svg';
+  else if (mode === 'summer_winter') img.src = 'assets/summer1.svg';
+  else img.src = 'assets/village.svg';
 }
 
 function handleCycleImageUpload(e) {
@@ -371,96 +246,27 @@ function handleCycleImageUpload(e) {
   reader.readAsDataURL(file);
 }
 
-/**
- * Thuật toán biến đổi phong cách điểm ảnh thực tế (Pixel-level Domain Translation):
- * - Ngựa -> Ngựa vằn: Tạo sọc đen trắng theo góc gradient của đối tượng
- * - Mùa hè -> Mùa đông: Phủ tuyết trắng lên các vùng có màu xanh lá và mặt phẳng
- * - Ảnh chụp -> Van Gogh: Áp dụng trường dòng chảy cọ xoáy (Swirling Flow Field)
- */
-function runCycleGANInference() {
-  if (!cycleSrcCtx || !cycleTransCtx || !cycleRecCtx) return;
+async function runCycleGANInference() {
+  if (!cycleSrcCanvas || !cycleTransCanvas || !cycleRecCanvas) return;
 
-  const w = cycleSrcCanvas.width;
-  const h = cycleSrcCanvas.height;
-  const srcData = cycleSrcCtx.getImageData(0, 0, w, h);
-  const src = srcData.data;
+  if (window.NeuralEngine && window.NeuralEngine.isReady) {
+    const { fakeB, reconA, cycleLoss, features } = window.NeuralEngine.processCycleGAN(cycleSrcCanvas);
 
-  // 1. Biến đổi Generator G(A) -> Domain B
-  const transData = cycleTransCtx.createImageData(w, h);
-  const trans = transData.data;
+    await tf.browser.toPixels(fakeB, cycleTransCanvas);
+    await tf.browser.toPixels(reconA, cycleRecCanvas);
 
-  // 2. Tái tạo khép kín Generator F(B) -> Domain A'
-  const recData = cycleRecCtx.createImageData(w, h);
-  const rec = recData.data;
+    // Kính hiển vi cho CycleGAN Residual Block
+    const fmapCycle = document.getElementById('fmap-cycle-res');
+    if (fmapCycle) await window.NeuralEngine.renderFeatureMapSlice(features, 8, fmapCycle);
 
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const i = (y * w + x) * 4;
-      const r = src[i], g = src[i+1], b = src[i+2], a = src[i+3];
+    fakeB.dispose();
+    reconA.dispose();
+    features.dispose();
 
-      if (currentCycleMode === 'horse_zebra') {
-        // Phát hiện thân ngựa màu nâu/tối
-        const isBrown = (r > 90 && r > g && g > b && (r - b) > 30);
-        if (isBrown) {
-          // Tạo sọc vằn đen trắng zebra (chu kỳ sin sóng)
-          const stripe = Math.sin((x * 0.28 + y * 0.12));
-          if (stripe > 0.1) {
-            // Sọc đen
-            trans[i] = 20; trans[i+1] = 25; trans[i+2] = 35; trans[i+3] = 255;
-          } else {
-            // Nền trắng
-            trans[i] = 245; trans[i+1] = 248; trans[i+2] = 250; trans[i+3] = 255;
-          }
-        } else {
-          // Giữ nguyên đồng cỏ và bầu trời
-          trans[i] = r; trans[i+1] = g; trans[i+2] = b; trans[i+3] = a;
-        }
-      } else if (currentCycleMode === 'summer_winter') {
-        // Phát hiện thảm cỏ xanh hoặc đỉnh núi
-        const isGreen = (g > r && g > b && g > 70);
-        const isMountain = (r > 60 && r < 130 && g > 60 && g < 130 && b > 80 && y < h * 0.7);
-        if (isGreen || isMountain) {
-          // Phủ tuyết trắng lạnh giá
-          const snow = Math.min(255, Math.floor((r + g + b) / 3 * 0.4 + 190));
-          trans[i] = snow; trans[i+1] = Math.min(255, snow + 5); trans[i+2] = Math.min(255, snow + 15); trans[i+3] = 255;
-        } else {
-          // Làm lạnh bầu trời
-          trans[i] = Math.floor(r * 0.8);
-          trans[i+1] = Math.floor(g * 0.9);
-          trans[i+2] = Math.min(255, Math.floor(b * 1.15));
-          trans[i+3] = a;
-        }
-      } else {
-        // Tranh sơn dầu Van Gogh: Nét cọ xoáy Starry Night
-        const swirlX = Math.floor(x + 5 * Math.sin(y * 0.08));
-        const swirlY = Math.floor(y + 5 * Math.cos(x * 0.08));
-        const safeX = Math.max(0, Math.min(w - 1, swirlX));
-        const safeY = Math.max(0, Math.min(h - 1, swirlY));
-        const sIdx = (safeY * w + safeX) * 4;
-
-        // Bảng màu rực rỡ sơn dầu
-        trans[i] = Math.min(255, Math.floor(src[sIdx] * 1.2 + 25 * Math.sin(x*0.1)));
-        trans[i+1] = Math.min(255, Math.floor(src[sIdx+1] * 1.1 + 30 * Math.cos(y*0.1)));
-        trans[i+2] = Math.min(255, Math.floor(src[sIdx+2] * 1.3 + 40));
-        trans[i+3] = 255;
-      }
-
-      // Tái tạo khép kín F(G(A)) -> A' (Phục hồi lại với sai số cực nhỏ)
-      const noise = (Math.random() - 0.5) * 4;
-      rec[i] = Math.max(0, Math.min(255, Math.floor(r + noise)));
-      rec[i+1] = Math.max(0, Math.min(255, Math.floor(g + noise)));
-      rec[i+2] = Math.max(0, Math.min(255, Math.floor(b + noise)));
-      rec[i+3] = 255;
+    const statusEl = document.getElementById('cycle-status-badge');
+    if (statusEl) {
+      statusEl.innerHTML = `<span class="text-emerald-400 font-semibold">✓ CycleGAN Forward & Inverse Pass hoàn tất trên GPU! Sai số ma trận L1 Loss: ${(cycleLoss).toFixed(4)}</span>`;
     }
-  }
-
-  cycleTransCtx.putImageData(transData, 0, 0);
-  cycleRecCtx.putImageData(recData, 0, 0);
-
-  const statusEl = document.getElementById('cycle-status-badge');
-  if (statusEl) {
-    const cycleLoss = (0.012 + Math.random() * 0.005).toFixed(4);
-    statusEl.innerHTML = `<span class="text-emerald-400 font-semibold">✓ Đã chạy xong vòng lặp Cycle! Cycle Consistency Loss = ${cycleLoss} (Rất khớp với ảnh gốc)</span>`;
   }
 }
 
@@ -474,214 +280,121 @@ function triggerCycleAnimation() {
     setTimeout(() => {
       if (recCard) recCard.classList.remove('ring-4', 'ring-emerald-400');
       runCycleGANInference();
-    }, 450);
-  }, 450);
+    }, 400);
+  }, 400);
 }
 
 // =============================================================================
-// 3. STYLEGAN DYNAMIC LATENT VECTOR STUDIO (ĐẠI SỐ VECTOR MẶT NGƯỜI & BIẾN HÌNH)
+// 3. STYLEGAN / DCGAN 100-D LATENT SPACE SYNTHESIZER
 // =============================================================================
-let currentSeed = 42;
+let latentSliders = [];
 
 function initStyleGANStudio() {
+  const container = document.getElementById('latent-sliders-grid');
+  if (container) {
+    container.innerHTML = '';
+    // Tạo 8 thanh trượt điều khiển trực tiếp các chiều chính z[0] ... z[7] của tensor
+    for (let i = 0; i < 8; i++) {
+      const div = document.createElement('div');
+      div.className = 'space-y-1';
+      div.innerHTML = `
+        <div class="flex justify-between text-[11px] font-mono">
+          <span class="text-slate-300">Chiều Tensor $\\mathbf{z}[${i}]$:</span>
+          <span class="text-cyan-400" id="val-z-${i}">0.00</span>
+        </div>
+        <input type="range" id="slider-z-${i}" min="-2.5" max="2.5" step="0.05" value="${(window.NeuralEngine ? window.NeuralEngine.currentLatent[i] : 0).toFixed(2)}" class="w-full accent-cyan-400 cursor-pointer">
+      `;
+      container.appendChild(div);
+
+      const slider = div.querySelector('input');
+      slider.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        if (window.NeuralEngine) window.NeuralEngine.currentLatent[i] = val;
+        document.getElementById(`val-z-${i}`).innerText = val.toFixed(2);
+        updateDCGANFace();
+      });
+    }
+  }
+
+  // Sliders ngữ nghĩa (Nụ cười, Tuổi, Kính)
   const smileSlider = document.getElementById('slider-smile');
   const ageSlider = document.getElementById('slider-age');
   const glassesSlider = document.getElementById('slider-glasses');
-  const morphSlider = document.getElementById('slider-morph');
 
-  const updateFace = () => {
+  const updateSemantic = () => {
+    if (!window.NeuralEngine) return;
     const smile = smileSlider ? parseFloat(smileSlider.value) : 0;
     const age = ageSlider ? parseFloat(ageSlider.value) : 25;
     const glasses = glassesSlider ? parseFloat(glassesSlider.value) : 0;
-    const morph = morphSlider ? parseFloat(morphSlider.value) : 0;
 
-    // Cập nhật nhãn giá trị
-    const valSmile = document.getElementById('val-smile');
-    const valAge = document.getElementById('val-age');
-    const valGlasses = document.getElementById('val-glasses');
-    const valMorph = document.getElementById('val-morph');
+    // Phép cộng trừ vector tiềm ẩn trên Tensor thật
+    window.NeuralEngine.currentLatent[0] = smile * 1.5;
+    window.NeuralEngine.currentLatent[1] = ((age - 25) / 50) * 1.8;
+    window.NeuralEngine.currentLatent[2] = glasses * 2.0;
 
-    if (valSmile) valSmile.innerText = smile > 0 ? `+${smile}` : `${smile}`;
-    if (valAge) valAge.innerText = `${age} tuổi`;
-    if (valGlasses) valGlasses.innerText = glasses > 0.2 ? 'Có kính râm' : 'Không kính';
-    if (valMorph) valMorph.innerText = `${morph}% (A ➔ B)`;
+    // Cập nhật giá trị lên các slider z[0..2]
+    for (let k = 0; k < 3; k++) {
+      const sl = document.getElementById(`slider-z-${k}`);
+      const vl = document.getElementById(`val-z-${k}`);
+      if (sl) sl.value = window.NeuralEngine.currentLatent[k].toFixed(2);
+      if (vl) vl.innerText = window.NeuralEngine.currentLatent[k].toFixed(2);
+    }
 
-    renderStyleGANCanvas(smile, age, glasses, morph);
+    updateDCGANFace();
   };
 
-  if (smileSlider) smileSlider.addEventListener('input', updateFace);
-  if (ageSlider) ageSlider.addEventListener('input', updateFace);
-  if (glassesSlider) glassesSlider.addEventListener('input', updateFace);
-  if (morphSlider) morphSlider.addEventListener('input', updateFace);
+  if (smileSlider) smileSlider.addEventListener('input', updateSemantic);
+  if (ageSlider) ageSlider.addEventListener('input', updateSemantic);
+  if (glassesSlider) glassesSlider.addEventListener('input', updateSemantic);
 
-  updateFace();
+  updateDCGANFace();
 }
 
-function randomizeFaceSeed() {
-  currentSeed = Math.floor(Math.random() * 1000);
-  const smileSlider = document.getElementById('slider-smile');
-  const ageSlider = document.getElementById('slider-age');
-  const glassesSlider = document.getElementById('slider-glasses');
-  const morphSlider = document.getElementById('slider-morph');
-
-  if (smileSlider) smileSlider.value = ((Math.random() - 0.5) * 1.6).toFixed(1);
-  if (ageSlider) ageSlider.value = Math.floor(10 + Math.random() * 60);
-  if (glassesSlider) glassesSlider.value = Math.random() > 0.5 ? 1 : 0;
-  if (morphSlider) morphSlider.value = Math.floor(Math.random() * 100);
-
-  const event = new Event('input');
-  if (smileSlider) smileSlider.dispatchEvent(event);
-}
-
-function renderStyleGANCanvas(smile, age, glasses, morph) {
+async function updateDCGANFace() {
   const canvas = document.getElementById('stylegan-face-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width;
-  const h = canvas.height;
-  ctx.clearRect(0, 0, w, h);
+  if (!canvas || !window.NeuralEngine || !window.NeuralEngine.isReady) return;
 
-  // Background gradient
-  const bgGrad = ctx.createRadialGradient(w/2, h/2, 20, w/2, h/2, w/2);
-  bgGrad.addColorStop(0, '#1e293b');
-  bgGrad.addColorStop(1, '#090d16');
-  ctx.fillStyle = bgGrad;
-  ctx.fillRect(0, 0, w, h);
+  const { image, fMap1, fMap2, fMap3 } = window.NeuralEngine.generateDCGAN(window.NeuralEngine.currentLatent);
+  
+  // Render ảnh RGB tensor ra Canvas
+  await tf.browser.toPixels(image, canvas);
 
-  // Nội suy màu da (Interpolated Skin Tone)
-  const t = morph / 100.0;
-  const skinR = Math.floor(254 * (1 - t) + 246 * t);
-  const skinG = Math.floor(215 * (1 - t) + 195 * t);
-  const skinB = Math.floor(170 * (1 - t) + 160 * t);
-  ctx.fillStyle = `rgb(${skinR}, ${skinG}, ${skinB})`;
+  // Kính hiển vi soi các tầng Deconv
+  const fmap1Canvas = document.getElementById('fmap-dcgan-l1');
+  const fmap2Canvas = document.getElementById('fmap-dcgan-l2');
+  const fmap3Canvas = document.getElementById('fmap-dcgan-l3');
 
-  // Cổ áo
-  ctx.beginPath();
-  ctx.ellipse(w/2, h * 0.88, 38, 22, 0, 0, 2 * Math.PI);
-  ctx.fill();
+  if (fmap1Canvas) await window.NeuralEngine.renderFeatureMapSlice(fMap1, 4, fmap1Canvas);
+  if (fmap2Canvas) await window.NeuralEngine.renderFeatureMapSlice(fMap2, 8, fmap2Canvas);
+  if (fmap3Canvas) await window.NeuralEngine.renderFeatureMapSlice(fMap3, 2, fmap3Canvas);
 
-  // Hình dáng đầu
-  const headW = 78 - (age > 50 ? 4 : 0) + 6 * Math.sin(t * Math.PI);
-  const headH = 98 - (age < 15 ? 8 : 0);
-  ctx.beginPath();
-  ctx.ellipse(w/2, h/2 + 2, headW, headH, 0, 0, 2 * Math.PI);
-  ctx.fill();
+  image.dispose();
+  fMap1.dispose();
+  fMap2.dispose();
+  fMap3.dispose();
 
-  // Tóc (Morph giữa Tóc Đen Ngắn và Tóc Vàng Bồng Bềnh)
-  const hairColor = t > 0.5 ? '#f59e0b' : (age > 55 ? '#94a3b8' : '#1e293b');
-  ctx.fillStyle = hairColor;
-  ctx.beginPath();
-  ctx.arc(w/2, h/2 - 20, headW + 4, Math.PI, 2 * Math.PI);
-  if (t > 0.5) {
-    // Tóc dài buông xõa hai bên
-    ctx.rect(w/2 - headW - 4, h/2 - 20, 18, 90);
-    ctx.rect(w/2 + headW - 14, h/2 - 20, 18, 90);
-  }
-  ctx.fill();
-
-  // Đôi mắt
-  const eyeOffset = 28;
-  const eyeY = h/2 - 6;
-  ctx.fillStyle = '#0f172a';
-  ctx.beginPath(); ctx.arc(w/2 - eyeOffset, eyeY, 6, 0, 2 * Math.PI); ctx.fill();
-  ctx.beginPath(); ctx.arc(w/2 + eyeOffset, eyeY, 6, 0, 2 * Math.PI); ctx.fill();
-  // Ánh sáng trong mắt
-  ctx.fillStyle = '#ffffff';
-  ctx.beginPath(); ctx.arc(w/2 - eyeOffset + 2, eyeY - 2, 2.5, 0, 2 * Math.PI); ctx.fill();
-  ctx.beginPath(); ctx.arc(w/2 + eyeOffset + 2, eyeY - 2, 2.5, 0, 2 * Math.PI); ctx.fill();
-
-  // Lông mày
-  ctx.strokeStyle = hairColor;
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(w/2 - eyeOffset - 12, eyeY - 14 + smile * 2);
-  ctx.lineTo(w/2 - eyeOffset + 12, eyeY - 14 - smile * 2);
-  ctx.moveTo(w/2 + eyeOffset - 12, eyeY - 14 - smile * 2);
-  ctx.lineTo(w/2 + eyeOffset + 12, eyeY - 14 + smile * 2);
-  ctx.stroke();
-
-  // Nếp nhăn tuổi già (Age Effects)
-  if (age > 40) {
-    const alpha = Math.min(1, (age - 40) / 30);
-    ctx.strokeStyle = `rgba(100, 116, 139, ${alpha * 0.7})`;
-    ctx.lineWidth = 1.5;
-    // Nếp nhăn trán
-    ctx.beginPath(); ctx.moveTo(w/2 - 30, h/2 - 50); ctx.lineTo(w/2 + 30, h/2 - 50); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(w/2 - 22, h/2 - 40); ctx.lineTo(w/2 + 22, h/2 - 40); ctx.stroke();
-    // Vết chân chim khóe mắt
-    ctx.beginPath(); ctx.moveTo(w/2 - 36, eyeY); ctx.lineTo(w/2 - 44, eyeY - 4); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(w/2 + 36, eyeY); ctx.lineTo(w/2 + 44, eyeY - 4); ctx.stroke();
-  }
-
-  // Mũi
-  ctx.strokeStyle = 'rgba(180, 83, 9, 0.5)';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(w/2, eyeY + 5);
-  ctx.lineTo(w/2 - 3, eyeY + 28);
-  ctx.lineTo(w/2 + 4, eyeY + 28);
-  ctx.stroke();
-
-  // Nụ cười (Mouth Curvature)
-  const mouthY = h/2 + 46;
-  const mouthCurve = smile * 20; // Độ cong của miệng
-  ctx.strokeStyle = '#e11d48';
-  ctx.lineWidth = 3.5;
-  ctx.lineCap = 'round';
-  ctx.beginPath();
-  ctx.moveTo(w/2 - 25, mouthY);
-  ctx.quadraticCurveTo(w/2, mouthY + mouthCurve, w/2 + 25, mouthY);
-  ctx.stroke();
-
-  if (smile > 0.5) {
-    // Hé nụ cười lộ răng trắng
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.moveTo(w/2 - 18, mouthY + 1);
-    ctx.quadraticCurveTo(w/2, mouthY + mouthCurve - 2, w/2 + 18, mouthY + 1);
-    ctx.fill();
-  }
-
-  // Kính Râm (Sunglasses)
-  if (glasses > 0.1) {
-    const alpha = Math.min(1, glasses);
-    ctx.fillStyle = `rgba(15, 23, 42, ${alpha * 0.92})`;
-    ctx.strokeStyle = '#38bdf8';
-    ctx.lineWidth = 2.5;
-
-    // Tròng kính trái & phải
-    ctx.beginPath();
-    ctx.roundRect(w/2 - 42, eyeY - 14, 32, 28, 6);
-    ctx.roundRect(w/2 + 10, eyeY - 14, 32, 28, 6);
-    ctx.fill();
-    ctx.stroke();
-
-    // Gọng kính nối ngang mũi
-    ctx.beginPath();
-    ctx.moveTo(w/2 - 10, eyeY - 2);
-    ctx.lineTo(w/2 + 10, eyeY - 2);
-    ctx.stroke();
-
-    // Vệt phản chiếu ánh sáng trắng trên kính
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(w/2 - 35, eyeY - 10); ctx.lineTo(w/2 - 22, eyeY + 8);
-    ctx.moveTo(w/2 + 17, eyeY - 10); ctx.lineTo(w/2 + 30, eyeY + 8);
-    ctx.stroke();
-  }
-
-  // Cập nhật công thức toán học
+  // Cập nhật công thức
   const formulaEl = document.getElementById('latent-vector-formula');
   if (formulaEl) {
-    const smileSign = smile >= 0 ? `+ ${(smile).toFixed(1)}` : `- ${Math.abs(smile).toFixed(1)}`;
-    formulaEl.innerHTML = `$$\\mathbf{w}_{out} = (1-${(t).toFixed(2)})\\mathbf{w}_A + ${(t).toFixed(2)}\\mathbf{w}_B ${smileSign}\\cdot\\vec{v}_{cười} + ${(glasses).toFixed(1)}\\cdot\\vec{v}_{kính} + \\left(\\frac{${age}-25}{50}\\right)\\cdot\\vec{v}_{tuổi}$$`;
+    formulaEl.innerHTML = `$$\\mathbf{z} = [${window.NeuralEngine.currentLatent[0].toFixed(2)}, ${window.NeuralEngine.currentLatent[1].toFixed(2)}, ${window.NeuralEngine.currentLatent[2].toFixed(2)}, \\dots, ${window.NeuralEngine.currentLatent[7].toFixed(2)}] \\in \\mathbb{R}^{32}$$`;
     if (window.renderMathInElement) window.renderMathInElement(formulaEl);
   }
 }
 
+function randomizeFaceSeed() {
+  if (!window.NeuralEngine) return;
+  for (let i = 0; i < window.NeuralEngine.latentDim; i++) {
+    window.NeuralEngine.currentLatent[i] = (Math.random() - 0.5) * 3;
+    const sl = document.getElementById(`slider-z-${i}`);
+    const vl = document.getElementById(`val-z-${i}`);
+    if (sl) sl.value = window.NeuralEngine.currentLatent[i].toFixed(2);
+    if (vl) vl.innerText = window.NeuralEngine.currentLatent[i].toFixed(2);
+  }
+  updateDCGANFace();
+}
+
 // =============================================================================
-// 4. MINI-GAME: THÁM TỬ AI (TURING TEST CHALLENGE)
+// 4. MINI-GAME THÁM TỬ AI
 // =============================================================================
 const TuringQuestions = [
   {
@@ -773,7 +486,6 @@ function showTuringEndScreen() {
         <div class="text-5xl">🏆</div>
         <h3 class="text-2xl font-bold text-cyan-400">Hoàn Thành Thử Thách Thám Tử AI!</h3>
         <p class="text-slate-300 text-lg">Bạn đã đạt điểm số: <strong class="text-amber-400">${userScore}/${TuringQuestions.length}</strong></p>
-        <p class="text-slate-400 max-w-md mx-auto text-sm">Bạn đã hiểu được cách mà mạng Discriminator liên tục soi các chi tiết bất thường (bông tai, nếp tóc, ngón tay) để bắt bài Generator!</p>
         <button onclick="userScore=0; loadTuringQuestion(0);" class="px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold rounded-xl transition shadow-lg shadow-cyan-500/20">Chơi Lại</button>
       </div>
     `;
