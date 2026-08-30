@@ -1,298 +1,10 @@
 /**
  * GAN Playground 4.0 - Full Real PyTorch GPU Connected Engine
- * Toàn bộ 4 ứng dụng (CycleGAN, StyleGAN e4e, Pix2Pix, 2D Arena) đều gửi Tensor lên PyTorch CUDA GPU!
+ * Vận hành 3 ứng dụng cốt lõi (CycleGAN, Pix2Pix U-Net, 2D Point GAN Arena) trên PyTorch CUDA GPU!
  */
 
 // =============================================================================
-// 1. STYLEGAN e4e REAL FACE INVERSION & EDITING STUDIO (PYTORCH GPU BACKEND)
-// =============================================================================
-const e4eDatasets = {
-  ronaldo: {
-    name: "Cristiano Ronaldo (Ảnh Test Thực Tế)",
-    source: "assets/e4e_faces/ronaldo/source.jpg",
-    inversion: "assets/e4e_faces/ronaldo/inversion.jpg",
-    young: "assets/e4e_faces/ronaldo/young.jpg",
-    old: "assets/e4e_faces/ronaldo/old.jpg"
-  },
-  messi: {
-    name: "Lionel Messi (Figure 1 Chuẩn Paper e4e)",
-    source: "assets/e4e_faces/messi/source.jpg",
-    inversion: "assets/e4e_faces/messi/inversion.jpg",
-    young: "assets/e4e_faces/messi/young.jpg",
-    old: "assets/e4e_faces/messi/old.jpg"
-  },
-  taylor: {
-    name: "Taylor Swift (Nghệ sĩ Nữ)",
-    source: "assets/e4e_faces/taylor/source.jpg",
-    inversion: "assets/e4e_faces/taylor/inversion.jpg",
-    young: "assets/e4e_faces/taylor/young.jpg",
-    old: "assets/e4e_faces/taylor/old.jpg"
-  },
-  elon: {
-    name: "Elon Musk (Doanh nhân Nam)",
-    source: "assets/e4e_faces/elon/source.jpg",
-    inversion: "assets/e4e_faces/elon/inversion.jpg",
-    young: "assets/e4e_faces/elon/young.jpg",
-    old: "assets/e4e_faces/elon/old.jpg"
-  }
-};
-
-let currente4eKey = 'ronaldo';
-let customSourceDataUrl = null;
-let customYoungDataUrl = null;
-let customOldDataUrl = null;
-
-async function checkGPUStatus() {
-  const badge = document.getElementById('pytorch-status-badge');
-  try {
-    const res = await fetch('/api/gpu_status');
-    if (res.ok) {
-      const data = await res.json();
-      if (badge) {
-        badge.innerHTML = `<span class="text-emerald-400 font-bold">⚡ ${data.gpu_name} (PyTorch ${data.torch_version}) • VRAM: ${data.vram_used_mb} MB</span>`;
-      }
-    }
-  } catch (e) {}
-}
-
-function initStyleGANStudio() {
-  checkGPUStatus();
-
-  const selectEl = document.getElementById('e4e-preset-select');
-  if (selectEl) {
-    selectEl.addEventListener('change', (e) => {
-      customSourceDataUrl = null;
-      currente4eKey = e.target.value;
-      loade4ePreset(currente4eKey);
-    });
-  }
-
-  const ageSlider = document.getElementById('slider-e4e-age');
-  const smileSlider = document.getElementById('slider-e4e-smile');
-  const glassesSlider = document.getElementById('slider-e4e-glasses');
-
-  const updateDynamicEdit = () => {
-    const age = ageSlider ? parseFloat(ageSlider.value) : 0;
-    const smile = smileSlider ? parseFloat(smileSlider.value) : 0;
-    const glasses = glassesSlider ? parseFloat(glassesSlider.value) : 0;
-
-    const valAge = document.getElementById('val-e4e-age');
-    const valSmile = document.getElementById('val-e4e-smile');
-    const valGlasses = document.getElementById('val-e4e-glasses');
-
-    if (valAge) valAge.innerText = age < -0.2 ? `-${Math.abs(age).toFixed(1)} (Trẻ em/Hồi nhỏ)` : (age > 0.2 ? `+${age.toFixed(1)} (Lão hóa/Về già)` : `0.0 (Tuổi gốc)`);
-    if (valSmile) valSmile.innerText = smile > 0.2 ? `+${smile.toFixed(1)} (Cười rạng rỡ)` : `0.0 (Bình thường)`;
-    if (valGlasses) valGlasses.innerText = glasses > 0.3 ? 'Đeo kính thời trang' : 'Không kính';
-
-    rendere4eInteractiveCanvas(age, smile, glasses);
-  };
-
-  if (ageSlider) ageSlider.addEventListener('input', updateDynamicEdit);
-  if (smileSlider) smileSlider.addEventListener('input', updateDynamicEdit);
-  if (glassesSlider) glassesSlider.addEventListener('input', updateDynamicEdit);
-
-  loade4ePreset('ronaldo');
-}
-
-async function loade4ePreset(key) {
-  currente4eKey = key;
-  const data = e4eDatasets[key];
-  if (!data) return;
-
-  const srcImg = document.getElementById('e4e-img-source');
-  const invImg = document.getElementById('e4e-img-inversion');
-  const youngImg = document.getElementById('e4e-img-young');
-  const oldImg = document.getElementById('e4e-img-old');
-  const badge = document.getElementById('pytorch-status-badge');
-
-  if (srcImg) srcImg.src = data.source;
-  if (invImg) invImg.src = data.inversion;
-  if (youngImg) youngImg.src = data.young;
-  if (oldImg) oldImg.src = data.old;
-
-  try {
-    const res = await fetch('/api/e4e_invert', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ preset: key })
-    });
-    if (res.ok) {
-      const json = await res.json();
-      if (json.inversion) invImg.src = json.inversion;
-      if (json.young) youngImg.src = json.young;
-      if (json.old) oldImg.src = json.old;
-
-      if (badge) {
-        badge.innerHTML = `<span class="text-emerald-400 font-bold">⚡ ${json.device} • Độ trễ Forward Pass: ${json.latency_ms}ms</span>`;
-      }
-    }
-  } catch (err) {}
-
-  const ageSlider = document.getElementById('slider-e4e-age');
-  const smileSlider = document.getElementById('slider-e4e-smile');
-  const glassesSlider = document.getElementById('slider-e4e-glasses');
-  if (ageSlider) ageSlider.value = 0;
-  if (smileSlider) smileSlider.value = 0;
-  if (glassesSlider) glassesSlider.value = 0;
-
-  rendere4eInteractiveCanvas(0, 0, 0);
-}
-
-/**
- * Xử lý khi người dùng tải ảnh chân dung: Tạo ngay Young và Old mượt mà trên canvas và gửi lên GPU
- */
-async function handleCustomFaceUpload(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = async (event) => {
-    const rawImg = new Image();
-    rawImg.onload = async () => {
-      const faceCanvas = document.createElement('canvas');
-      const side = Math.min(rawImg.width, rawImg.height);
-      faceCanvas.width = 400;
-      faceCanvas.height = 400;
-      const fCtx = faceCanvas.getContext('2d');
-      const sx = (rawImg.width - side) / 2;
-      const sy = Math.max(0, (rawImg.height - side) * 0.2);
-      fCtx.drawImage(rawImg, sx, sy, side, side, 0, 0, 400, 400);
-
-      customSourceDataUrl = faceCanvas.toDataURL('image/jpeg', 0.95);
-
-      // Tạo Young Custom mượt mà (làn da sáng, mịn)
-      const youngCanvas = document.createElement('canvas');
-      youngCanvas.width = 400; youngCanvas.height = 400;
-      const yCtx = youngCanvas.getContext('2d');
-      yCtx.drawImage(faceCanvas, 0, 0);
-      yCtx.fillStyle = 'rgba(255, 245, 235, 0.15)';
-      yCtx.fillRect(0, 0, 400, 400);
-      customYoungDataUrl = youngCanvas.toDataURL('image/jpeg', 0.95);
-
-      // Tạo Old Custom mượt mà (tóc muối tiêu mượt chuyển tiếp radial, kính titan)
-      const oldCanvas = document.createElement('canvas');
-      oldCanvas.width = 400; oldCanvas.height = 400;
-      const oCtx = oldCanvas.getContext('2d');
-      oCtx.drawImage(faceCanvas, 0, 0);
-
-      // Tóc muối tiêu mượt mà bằng radial gradient
-      const grad = oCtx.createRadialGradient(200, 60, 20, 200, 60, 160);
-      grad.addColorStop(0, 'rgba(220, 225, 235, 0.55)');
-      grad.addColorStop(0.7, 'rgba(180, 185, 195, 0.25)');
-      grad.addColorStop(1, 'rgba(100, 105, 115, 0)');
-      oCtx.fillStyle = grad;
-      oCtx.fillRect(0, 0, 400, 200);
-
-      // Kính titan
-      oCtx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-      oCtx.strokeStyle = '#94a3b8';
-      oCtx.lineWidth = 2.5;
-      oCtx.beginPath();
-      oCtx.roundRect(140, 160, 42, 32, 6);
-      oCtx.roundRect(218, 160, 42, 32, 6);
-      oCtx.fill();
-      oCtx.stroke();
-      oCtx.beginPath(); oCtx.moveTo(182, 172); oCtx.lineTo(218, 172); oCtx.stroke();
-
-      customOldDataUrl = oldCanvas.toDataURL('image/jpeg', 0.95);
-
-      const srcImg = document.getElementById('e4e-img-source');
-      const invImg = document.getElementById('e4e-img-inversion');
-      const youngImg = document.getElementById('e4e-img-young');
-      const oldImg = document.getElementById('e4e-img-old');
-      const badge = document.getElementById('pytorch-status-badge');
-
-      if (srcImg) srcImg.src = customSourceDataUrl;
-      if (invImg) invImg.src = customSourceDataUrl;
-      if (youngImg) youngImg.src = customYoungDataUrl;
-      if (oldImg) oldImg.src = customOldDataUrl;
-
-      if (badge) badge.innerHTML = `<span class="text-amber-400 font-bold animate-pulse">⏳ PyTorch GPU đang chạy mạng e4e Encoder forward pass...</span>`;
-
-      try {
-        const response = await fetch('/api/e4e_invert', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ image: customSourceDataUrl })
-        });
-        if (response.ok) {
-          const json = await response.json();
-          if (badge) {
-            badge.innerHTML = `<span class="text-emerald-400 font-bold">✓ Mô hình PyTorch GPU hoàn tất xử lý ảnh của bạn! Thời gian chạy: ${json.latency_ms}ms</span>`;
-          }
-        }
-      } catch (err) {}
-
-      rendere4eInteractiveCanvas(0, 0, 0);
-    };
-    rawImg.src = event.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-function rendere4eInteractiveCanvas(age, smile, glasses) {
-  const canvas = document.getElementById('e4e-interactive-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width;
-  const h = canvas.height;
-  ctx.clearRect(0, 0, w, h);
-
-  let targetSrc = null;
-
-  if (customSourceDataUrl) {
-    if (age < -0.3 && customYoungDataUrl) targetSrc = customYoungDataUrl;
-    else if (age > 0.3 && customOldDataUrl) targetSrc = customOldDataUrl;
-    else targetSrc = customSourceDataUrl;
-  } else {
-    const data = e4eDatasets[currente4eKey];
-    if (!data) return;
-    if (age < -0.3) targetSrc = data.young;
-    else if (age > 0.3) targetSrc = data.old;
-    else targetSrc = data.inversion;
-  }
-
-  if (targetSrc) {
-    const img = new Image();
-    img.onload = () => {
-      ctx.drawImage(img, 0, 0, w, h);
-
-      if (smile > 0.2) {
-        ctx.strokeStyle = '#be123c';
-        ctx.lineWidth = 3.5;
-        ctx.lineCap = 'round';
-        ctx.beginPath();
-        ctx.moveTo(w * 0.43, h * 0.65);
-        ctx.quadraticCurveTo(w * 0.5, h * 0.65 + smile * 14, w * 0.57, h * 0.65);
-        ctx.stroke();
-      }
-
-      if (glasses > 0.3 && !targetSrc.includes('old.jpg')) {
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 2.2;
-        ctx.beginPath();
-        ctx.roundRect(w * 0.35, h * 0.42 - 12, 42, 32, 6);
-        ctx.roundRect(w * 0.53, h * 0.42 - 12, 42, 32, 6);
-        ctx.fill();
-        ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(w * 0.47, h * 0.42 - 4); ctx.lineTo(w * 0.53, h * 0.42 - 4); ctx.stroke();
-      }
-    };
-    img.src = targetSrc;
-  }
-
-  const formulaEl = document.getElementById('e4e-formula');
-  if (formulaEl) {
-    const ageSign = age >= 0 ? `+ ${(age).toFixed(1)}` : `- ${Math.abs(age).toFixed(1)}`;
-    const smileSign = smile >= 0 ? `+ ${(smile).toFixed(1)}` : `- ${Math.abs(smile).toFixed(1)}`;
-    formulaEl.innerHTML = `$$\\mathbf{w}^+_{edit} = \\text{e4e}(\\mathbf{x}) ${ageSign}\\cdot\\vec{v}_{age} ${smileSign}\\cdot\\vec{v}_{smile} + ${(glasses).toFixed(1)}\\cdot\\vec{v}_{glasses} \\in \\mathcal{W}^{18\\times 512}$$`;
-    if (window.renderMathInElement) window.renderMathInElement(formulaEl);
-  }
-}
-
-// =============================================================================
-// 2. CYCLEGAN EXACT-BODY NEURAL TEXTURE SYNTHESIS (PYTORCH GPU POWERED)
+// 1. CYCLEGAN EXACT-BODY NEURAL TEXTURE SYNTHESIS (PYTORCH GPU POWERED)
 // =============================================================================
 let cycleMainCanvas, cycleMainCtx;
 let cycleHeatmapCanvas, cycleHeatmapCtx;
@@ -321,7 +33,22 @@ const CycleDatasets = {
   }
 };
 
+async function checkGPUStatus() {
+  const badge = document.getElementById('header-gpu-badge');
+  try {
+    const res = await fetch('/api/gpu_status');
+    if (res.ok) {
+      const data = await res.json();
+      if (badge) {
+        badge.innerHTML = `⚡ ${data.gpu_name} (PyTorch ${data.torch_version} • VRAM: ${data.vram_used_mb} MB)`;
+      }
+    }
+  } catch (e) {}
+}
+
 function initCycleGAN() {
+  checkGPUStatus();
+
   cycleMainCanvas = document.getElementById('cycle-main-canvas');
   cycleHeatmapCanvas = document.getElementById('cycle-heatmap-canvas');
   if (!cycleMainCanvas) return;
@@ -591,7 +318,7 @@ function handleCycleImageUpload(e) {
 }
 
 // =============================================================================
-// 3. PIX2PIX NEURAL SKETCHPAD (U-NET GPU POWERED)
+// 2. PIX2PIX NEURAL SKETCHPAD (U-NET GPU POWERED)
 // =============================================================================
 let sketchCanvas, sketchCtx, resultCanvas, resultCtx;
 let isDrawing = false;
