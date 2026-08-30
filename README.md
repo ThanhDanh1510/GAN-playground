@@ -1,36 +1,40 @@
 # ⚡ GAN Playground Dành Cho Học Sinh (Student AI Lab)
 
-> **Sân chơi trực quan & Bộ giáo trình thực hành về Mạng Đối Nghịch Tạo Sinh (GAN - Generative Adversarial Networks)** dành riêng cho học sinh và người mới bắt đầu học Trí tuệ Nhân tạo.
+> **Sân chơi trực quan & Bộ giáo trình thực hành về Mạng Đối Nghịch Tạo Sinh (GAN - Generative Adversarial Networks)** dành riêng cho học sinh, sinh viên và người mới bắt đầu học Trí Tuệ Nhân Tạo. Vận hành 100% bằng mô hình PyTorch Deep Learning trên GPU!
 
 ![License](https://img.shields.io/badge/License-MIT-emerald.svg)
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-orange.svg)
-![Web Playground](https://img.shields.io/badge/Web_Playground-Zero--Install-cyan.svg)
+![CUDA GPU](https://img.shields.io/badge/CUDA_GPU-Accelerated-green.svg)
+![Web Playground](https://img.shields.io/badge/Web_Playground-Real--Time-cyan.svg)
+![Google Colab](https://img.shields.io/badge/Google_Colab-1--Click_Ready-yellow.svg)
 
 ---
 
-## 🌟 4 Sân Chơi Notebook Độc Lập Chạy 1-Click Trên Google Colab
+## 🌟 3 Sân Chơi Cốt Lõi (Sổ Tay Google Colab 1-Click Ready)
 
-Mỗi chủ đề là một tệp Jupyter Notebook riêng biệt, có sẵn nút **Open in Colab (GPU miễn phí)** và chạy độc lập:
+Mỗi chủ đề là một tệp Jupyter Notebook độc lập, có sẵn nút **Open in Colab (GPU miễn phí)**:
 
-| Playground | Chủ đề & Điểm thú vị | Sổ tay Google Colab |
-| :--- | :--- | :--- |
-| **⚡ 1. 2D Point GAN Arena** | Cuộc đấu trực tiếp giữa Kẻ làm giả vs Cảnh sát; học phân phối **Hình Trái Tim 💖, Vòng Tròn ⭕, Xoắn Ốc 🌀** trong 35 dòng PyTorch! | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ThanhDanh1510/GAN-playground/blob/main/notebooks/01_2d_point_gan_playground.ipynb) |
-| **🎨 2. Pix2Pix Sketch-to-Art** | **Bút vẽ phù thủy**: Vẽ nét phác thảo (Doodle) $\to$ U-Net AI tự động tô màu và đổ bóng chân thực! | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ThanhDanh1510/GAN-playground/blob/main/notebooks/02_pix2pix_sketch2art_playground.ipynb) |
-| **🦓 3. CycleGAN Transformer** | **Máy biến đổi thế giới không cần ghép đôi**: *Ngựa $\leftrightarrow$ Ngựa vằn*, *Mùa hè $\leftrightarrow$ Mùa đông*, với nguyên lý *Cycle Consistency Loss* ($A \to B \to A'$). | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ThanhDanh1510/GAN-playground/blob/main/notebooks/03_cyclegan_world_transformer.ipynb) |
-| **😎 4. StyleGAN Latent Studio** | **Đại số vector mặt người**: $\text{Mặt cười có kính} = \text{Mặt gốc} + \vec{v}_{cười} + \vec{v}_{kính}$; Kéo slider biến hình (Morphing) mượt mà giữa 2 người! | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ThanhDanh1510/GAN-playground/blob/main/notebooks/04_stylegan_latent_studio.ipynb) |
+| STT | Sân Chơi (Playground) | Chủ Đề & Điểm Nhấn Khoa Học | Sổ Tay Google Colab |
+| :---: | :--- | :--- | :---: |
+| **01** | **🦓 CycleGAN Transformer** | **Máy biến đổi phong cách không cần cặp ảnh**: Nhận diện thân chú ngựa trắng và vẽ các dải sọc vằn trực tiếp lên cơ bắp của chính chú ngựa đó với nguyên lý *Cycle Consistency Loss* ($A \to B \to A'$). | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ThanhDanh1510/GAN-playground/blob/main/notebooks/03_cyclegan_world_transformer.ipynb) |
+| **02** | **🎨 Pix2Pix Sketch-to-Art** | **Bút vẽ phù thủy**: Vẽ nét phác thảo (Doodle) $\to$ Mạng nơ-ron U-Net tự động phân tích đường viền và tạo bóng 3D, nguồn sáng và kết cấu vật liệu sống động! | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ThanhDanh1510/GAN-playground/blob/main/notebooks/02_pix2pix_sketch2art_playground.ipynb) |
+| **03** | **⚡ 2D Point GAN Arena** | **Đấu trường Minimax thời gian thực**: Cuộc chiến giữa Kẻ làm giả ($G$) vs Cảnh sát ($D$); học phân phối **Hình Trái Tim 💖, Vòng Tròn ⭕, Xoắn Ốc 🌀** trong 35 dòng PyTorch! | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ThanhDanh1510/GAN-playground/blob/main/notebooks/01_2d_point_gan_playground.ipynb) |
+| **Tổng Hợp** | **📚 Top 3 GAN Playground** | **Giáo trình trọn gói**: Toàn bộ lý thuyết trò chơi Minimax, cân bằng Nash, kiến trúc U-Net, Cycle Consistency + **10 Mẹo thực chiến (GAN Hacks)**. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ThanhDanh1510/GAN-playground/blob/main/notebooks/top3_gan_playground.ipynb) |
 
 ---
 
 ## 🚀 Cách Sử Dụng Nhanh
 
-### 1. Chạy Web Playground Tương Tác (Không cần cài đặt!)
-Chỉ cần mở tệp [web/index.html](file:///c:/Users/PC/Downloads/GAN%20playground/web/index.html) bằng bất kỳ trình duyệt web nào (Chrome, Edge, Firefox, Safari):
-- **Trải nghiệm cả 5 Studio**: CycleGAN World Transformer, Pix2Pix Sketchpad, StyleGAN Face Studio, 2D Point GAN Arena (chạy neural net thời gian thực), và Mini-game Thám tử AI.
+### 1. Chạy Web Playground Cục Bộ (Tăng Tốc PyTorch GPU)
+Khởi động máy chủ backend PyTorch Inference Server:
+```bash
+python python/app_server.py --port 8080
+```
+Truy cập trình duyệt tại địa chỉ: **[http://localhost:8080](http://localhost:8080)** để trải nghiệm giao diện tương tác thời gian thực với card đồ họa GPU!
 
-### 2. Chạy Thực Hành Code Trên Google Colab (Có GPU Miễn Phí)
-Bấm trực tiếp vào các nút **Open in Colab** ở bảng trên để mở bất kỳ bài học nào bạn muốn!
-
-*(Trên Colab, chọn menu **Runtime > Change runtime type > T4 GPU** để tăng tốc độ huấn luyện!)*
+### 2. Chạy Thực Hành Trên Google Colab (Có GPU Miễn Phí)
+Bấm trực tiếp vào các nút **Open in Colab** ở bảng trên.
+*(Trên giao diện Colab, chọn menu **Runtime > Change runtime type > T4 GPU** để kích hoạt tăng tốc phần cứng!)*
 
 ---
 
@@ -39,35 +43,34 @@ Bấm trực tiếp vào các nút **Open in Colab** ở bảng trên để mở
 ```
 GAN playground/
 │
-├── web/                                         # 🌐 Ứng dụng Web tương tác (Zero-install)
-│   ├── index.html                               # Giao diện chính chứa 5 Studio
+├── web/                                         # 🌐 Ứng dụng Web tương tác thời gian thực
+│   ├── index.html                               # Giao diện chính chứa 3 Studio cốt lõi
 │   ├── js/
-│   │   ├── app_engine.js                        # Xử lý CycleGAN, Pix2Pix, StyleGAN, Turing Game
+│   │   ├── app_engine.js                        # Điều khiển CycleGAN, Pix2Pix & kết nối GPU API
 │   │   ├── gan_engine.js                        # Mini Neural Net engine thuần JavaScript
+│   │   ├── tfjs_gan_engine.js                   # TensorFlow.js GPU WebGL backend
 │   │   └── visualizer.js                        # Trực quan hóa 2D Points, Heatmap & Loss Battle
-│   └── assets/                                  # Bộ ảnh vector SVG mẫu đẹp mắt
+│   └── assets/                                  # Tài nguyên ảnh chụp & dữ liệu mẫu
 │
-├── notebooks/                                   # 📓 4 Sổ tay Colab độc lập cho từng Playground
-│   ├── 01_2d_point_gan_playground.ipynb         # Playground 1: 2D Point GAN
-│   ├── 02_pix2pix_sketch2art_playground.ipynb   # Playground 2: Pix2Pix Sketch-to-Art
-│   ├── 03_cyclegan_world_transformer.ipynb      # Playground 3: CycleGAN
-│   └── 04_stylegan_latent_studio.ipynb          # Playground 4: StyleGAN Latent Studio
+├── notebooks/                                   # 📓 Sổ tay Colab độc lập cho từng bài học
+│   ├── 01_2d_point_gan_playground.ipynb         # Bài 1: 2D Point GAN Arena
+│   ├── 02_pix2pix_sketch2art_playground.ipynb   # Bài 2: Pix2Pix Sketch-to-Art (U-Net)
+│   ├── 03_cyclegan_world_transformer.ipynb      # Bài 3: CycleGAN Unpaired Translation
+│   └── top3_gan_playground.ipynb               # Giáo trình tổng hợp trọn bộ + 10 GAN Hacks
 │
-├── python/                                      # 🐍 Bộ mã nguồn PyTorch mẫu chuẩn mực
-│   ├── 01_toy_2d_gan.py                         # 35 dòng PyTorch học phân phối hình trái tim
-│   ├── 02_pix2pix_sketch2art.py                 # Pix2Pix U-Net biến nét vẽ thành tranh
-│   ├── 03_cyclegan_transformer.py               # CycleGAN chuyển đổi phong cách không cần cặp ảnh
-│   └── 04_latent_face_editor.py                 # Đại số vector và biến hình không gian tiềm ẩn
+├── python/                                      # 🐍 Máy chủ Deep Learning PyTorch GPU
+│   └── app_server.py                            # REST API server thực hiện Forward Pass & Backprop
 │
-└── docs/                                        # 📚 Sổ tay kiến thức dành cho học sinh
-    ├── top3_gan_adventures.md                   # Giải thích 3 ứng dụng bằng câu chuyện & hình vẽ
+└── docs/                                        # 📚 Tài liệu học tập chuyên sâu
+    ├── top3_gan_adventures.md                   # Hướng dẫn khám phá 3 sân chơi bằng hình vẽ & câu chuyện
+    ├── notebook_code_deep_dive.md               # Giải thích chi tiết TẠI SAO từng cell code như vậy
     └── gan_hacks_for_students.md                # 10 mẹo thực chiến của Soumith Chintala
 ```
 
 ---
 
 ## 💡 Nguồn Mở & Tài Liệu Tham Khảo Quốc Tế
+- **CycleGAN & Pix2Pix**: [junyanz/pytorch-CycleGAN-and-pix2pix](https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix) (UC Berkeley)
 - **GAN Lab**: [poloclub.github.io/ganlab](https://poloclub.github.io/ganlab/) (Google PAIR & Georgia Tech)
 - **PyTorch-GAN**: [eriklindernoren/PyTorch-GAN](https://github.com/eriklindernoren/PyTorch-GAN)
-- **CycleGAN & Pix2Pix**: [junyanz/pytorch-CycleGAN-and-pix2pix](https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix) (UC Berkeley)
 - **GAN Hacks**: [soumith/ganhacks](https://github.com/soumith/ganhacks) (Soumith Chintala)
